@@ -95,6 +95,7 @@ namespace PVX {
 		void NeuronLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Begin("DENS");
 			{
+				if (name.size()) bin.Write("NAME", name);
 				bin.Write("ROWS", int(Weights.rows()));
 				bin.Write("COLS", int(Weights.cols()));
 				bin.Write("WGHT", Weights.data(), Weights.size());
@@ -111,6 +112,7 @@ namespace PVX {
 		NeuralLayer_Base* NeuronLayer::Load2(PVX::BinLoader& bin) {
 			int rows = 0, cols = 0, act = 0, train = 0, prev = 0;
 			float rate, rms, drop, momentum;
+			std::string Name;
 			std::vector<float> Weights;
 			bin.Read("ROWS", rows);
 			bin.Read("COLS", cols);
@@ -122,8 +124,10 @@ namespace PVX {
 			bin.Read("ACTV", act);
 			bin.Read("TRNS", train);
 			bin.Read("INPT", prev);
+			bin.Read("NAME", Name);
 			bin.Execute();
 			auto ret = new NeuronLayer(cols-1, rows, LayerActivation(act), TrainScheme(train));
+			if (Name.size()) ret->name = Name;
 			ret->GetWeights() = Eigen::Map<Eigen::MatrixXf>(Weights.data(), rows, cols);
 			ret->_Dropout = drop;
 			ret->_iDropout = 1.0f / drop;
@@ -153,7 +157,6 @@ namespace PVX {
 				bin.Write("TRNG", (char)training);
 				bin.Write("INPC", Weights.rows());
 				bin.Write("OUTC", Weights.cols());
-
 				bin.Begin("WEIG"); {
 					bin.write(Weights.data(), sizeof(float), Weights.cols() * Weights.rows());
 				} bin.End();
@@ -205,7 +208,7 @@ namespace PVX {
 
 			float randScale = sqrtf(2.0f / (nInput + 1));
 
-			output = Eigen::MatrixXf{ nOutput + 1, 1 };
+			output = Eigen::MatrixXf::Ones(nOutput + 1, 1);
 			switch (Activation) {
 			case LayerActivation::Tanh:
 				randScale = sqrtf(1.0f / (nInput + 1));
@@ -241,9 +244,19 @@ namespace PVX {
 			}
 		}
 
+		NeuronLayer::NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate, TrainScheme Train, float WeightMax):
+			NeuronLayer(nInput, nOutput, Activate, Train, WeightMax) {
+			name = Name;
+		}
+
 		NeuronLayer::NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate, TrainScheme Train, float WeightMax) :
 			NeuronLayer(inp->nOutput(), nOutput, Activate, Train, WeightMax) {
 			PreviousLayer = inp;
+		}
+
+		NeuronLayer::NeuronLayer(const std::string& Name, NeuralLayer_Base* inp, int nOutput, LayerActivation Activate, TrainScheme Train, float WeightMax):
+			NeuronLayer(inp, nOutput, Activate, Train, WeightMax) {
+			name = Name;
 		}
 
 		void NeuralLayer_Base::UseDropout(int b) {

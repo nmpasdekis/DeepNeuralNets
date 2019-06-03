@@ -4,12 +4,26 @@
 namespace PVX {
 	namespace DeepNeuralNets {
 		void InputLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
-			bin.Write("INPT", nInput());
+			bin.Begin("INPT"); {
+				if (name.size()) bin.Write("NAME", name);
+				bin.Write("ICNT", nInput());
+			} bin.End();
 		}
-		InputLayer::InputLayer(PVX::BinLoader& bin) : InputLayer((int)bin) {}
-		InputLayer::InputLayer(const int Size) {
+		InputLayer::InputLayer(PVX::BinLoader& bin){
+			size_t ic;
+			bin.Read("NAME", name);
+			bin.Read("ICNT", ic);
+			bin.Execute();
+			output = Eigen::MatrixXf::Ones(ic + 1, 1);
+		}
+		InputLayer::InputLayer(const size_t Size) {
 			output = Eigen::MatrixXf::Ones(Size + 1, 1);
 		}
+		InputLayer::InputLayer(const std::string& Name, const size_t Size) {
+			name = Name;
+			output = Eigen::MatrixXf::Ones(Size + 1, 1);
+		}
+
 
 		int InputLayer::Input(const float * Data, int Count) {
 			if (output.cols() != Count)
@@ -39,12 +53,16 @@ namespace PVX {
 			return ret;
 		}
 
+		Eigen::MatrixXf InputLayer::MakeRawInput(const std::vector<float>& Input) {
+			return MakeRawInput(Input.data(), Input.size() / nInput());
+		}
+
 		Eigen::MatrixXf InputLayer::MakeRawInput(const float * Data, int Count) {
 			return MakeRawInput(Eigen::Map<Eigen::MatrixXf>((float*)Data, output.rows() - 1, Count));
 		}
 
 		size_t InputLayer::nInput() {
-			return output.rows();
+			return output.rows() - 1;
 		}
 
 		void InputLayer::Save(PVX::BinSaver & bin) {

@@ -1,6 +1,5 @@
 #include <Eigen/dense>
 
-//template<>
 inline Eigen::Block<Eigen::MatrixXf, -1, -1, false> outPart(Eigen::MatrixXf & m) {
 	return m.block(0, 0, m.rows() - 1, m.cols());
 }

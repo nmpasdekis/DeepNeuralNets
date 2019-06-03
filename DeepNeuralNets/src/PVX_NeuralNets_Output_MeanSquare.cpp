@@ -46,6 +46,6 @@ namespace PVX {
 		void MeanSquareOutput::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Write("MSQR", int(IndexOf.at(LastLayer)));
 		}
-		MeanSquareOutput::MeanSquareOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at((int)bin-1)) {}
+		MeanSquareOutput::MeanSquareOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at(bin.read<int>()-1)) {}
 	}
 }

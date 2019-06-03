@@ -91,6 +91,9 @@ namespace PVX::DeepNeuralNets {
 	Eigen::MatrixXf NeuralNetContainer::MakeRawInput(const Eigen::MatrixXf& inp) {
 		return Inputs[0]->MakeRawInput(inp);
 	}
+	Eigen::MatrixXf NeuralNetContainer::MakeRawInput(const std::vector<float>& inp) {
+		return Inputs[0]->MakeRawInput(inp);
+	}
 	std::vector<Eigen::MatrixXf> NeuralNetContainer::MakeRawInput(const std::vector<Eigen::MatrixXf>& inp) {
 		std::vector<Eigen::MatrixXf> ret;
 		size_t i = 0;
@@ -98,6 +101,21 @@ namespace PVX::DeepNeuralNets {
 			ret.push_back(l->MakeRawInput(inp[i++]));
 		return ret;
 	}
+
+	Eigen::MatrixXf NeuralNetContainer::FromVector(const std::vector<float>& Data) {
+		auto r = Output->nOutput();
+		Eigen::MatrixXf ret(r, Data.size()/r);
+		memcpy(ret.data(), Data.data(), Data.size() * sizeof(float));
+		return ret;
+	}
+
+	std::vector<float> NeuralNetContainer::ProcessVec(const std::vector<float>& Inp) {
+		auto tmp = ProcessRaw(Inputs[0]->MakeRawInput(Inp));
+		std::vector<float> ret(tmp.size());
+		memcpy(ret.data(), tmp.data(), ret.size() * sizeof(float));
+		return ret;
+	}
+
 	Eigen::MatrixXf NeuralNetContainer::Process(const Eigen::MatrixXf& inp) {
 		Inputs[0]->Input(inp);
 		return Output->Result();
@@ -118,20 +136,24 @@ namespace PVX::DeepNeuralNets {
 	}
 	float NeuralNetContainer::Train(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
 		Inputs[0]->Input(inp);
+		Output->FeedForward();
 		return Output->Train(outp);
 	}
 	float NeuralNetContainer::TrainRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
 		Inputs[0]->InputRaw(inp);
+		Output->FeedForward();
 		return Output->Train(outp);
 	}
 	float NeuralNetContainer::Train(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
+		Output->FeedForward();
 		return Output->Train(outp);
 	}
 	float NeuralNetContainer::TrainRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
+		Output->FeedForward();
 		return Output->Train(outp);
 	}
 

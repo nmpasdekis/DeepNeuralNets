@@ -101,8 +101,14 @@ namespace PVX {
 		std::string RemainingAsString();
 		std::wstring RemainingAsWideString();
 
+		//template<typename T>
+		//operator T() { T ret; Read(&ret, sizeof(T)); return ret; }
 		template<typename T>
-		operator T() { T ret; Read(&ret, sizeof(T)); return ret; }
+		T read() { 
+			T ret; 
+			Read(&ret, sizeof(T)); 
+			return ret; 
+		}
 
 		void Execute();
 		int OK();

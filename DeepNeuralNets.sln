@@ -5,6 +5,11 @@ VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeepNeuralNets", "DeepNeuralNets\DeepNeuralNets.vcxproj", "{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{90A96A2E-D990-46BC-9AC4-B2EB881691F6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E} = {A35CB4C9-087D-4527-A9F5-CD0D43246F8E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +26,14 @@ Global
 		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x64.Build.0 = Release|x64
 		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x86.ActiveCfg = Release|Win32
 		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x86.Build.0 = Release|Win32
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x64.ActiveCfg = Debug|x64
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x64.Build.0 = Debug|x64
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x86.ActiveCfg = Debug|Win32
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x86.Build.0 = Debug|Win32
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x64.ActiveCfg = Release|x64
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x64.Build.0 = Release|x64
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x86.ActiveCfg = Release|Win32
+		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -48,8 +48,9 @@ namespace PVX {
 			virtual void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) = 0;
 
 			void FixInputs(const std::vector<NeuralLayer_Base*>& ids);
-
+			std::string name;
 		public:
+			const std::string& Name() { return name; };
 			virtual void DNA(std::map<void*, WeightData> & Weights) = 0;
 			void Input(NeuralLayer_Base*);
 			void Inputs(const std::vector<NeuralLayer_Base*>&);
@@ -76,7 +77,7 @@ namespace PVX {
 			static float Dropout();
 			static void Dropout(float Rate);
 			static void UseDropout(int);
-
+			
 			virtual void SetLearnRate(float a) = 0;
 			virtual void ResetMomentum() = 0;
 		};
@@ -93,7 +94,8 @@ namespace PVX {
 			InputLayer(PVX::BinLoader& bin);
 		public:
 			void DNA(std::map<void*, WeightData> & Weights) {};
-			InputLayer(const int Size);
+			InputLayer(const size_t Size);
+			InputLayer(const std::string& Name, const size_t Size);
 			int Input(const float * Data, int Count = 1);
 			int Input(const Eigen::MatrixXf & Data);
 			void FeedForward(int) {}
@@ -102,7 +104,8 @@ namespace PVX {
 
 			void InputRaw(const Eigen::MatrixXf & Data);
 			Eigen::MatrixXf MakeRawInput(const Eigen::MatrixXf & Data);
-			Eigen::MatrixXf MakeRawInput(const float * Data, int Count = 1);
+			Eigen::MatrixXf MakeRawInput(const float* Data, int Count = 1);
+			Eigen::MatrixXf MakeRawInput(const std::vector<float>& Input);
 
 			void Save(PVX::BinSaver & bin);
 			void Load(PVX::BinLoader & bin);
@@ -154,7 +157,9 @@ namespace PVX {
 				_iDropout;
 		public:
 			NeuronLayer(int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
+			NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
 			NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
+			NeuronLayer(const std::string& Name, NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
 			size_t nInput();
 
 			void FeedForward(int Version);
@@ -365,7 +370,11 @@ namespace PVX {
 			void ResetMomentum();
 
 			Eigen::MatrixXf MakeRawInput(const Eigen::MatrixXf& inp);
+			Eigen::MatrixXf MakeRawInput(const std::vector<float>& inp);
 			std::vector<Eigen::MatrixXf> MakeRawInput(const std::vector<Eigen::MatrixXf>& inp);
+			Eigen::MatrixXf FromVector(const std::vector<float>& Data);
+
+			std::vector<float> ProcessVec(const std::vector<float>& Inp);
 
 			Eigen::MatrixXf Process(const Eigen::MatrixXf& inp);
 			Eigen::MatrixXf Process(const std::vector<Eigen::MatrixXf>& inp);

@@ -42,7 +42,7 @@ namespace PVX {
 			output = (tmp * div);
 		}
 
-		SoftmaxOutput::SoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at((int)bin-1)) {}
+		SoftmaxOutput::SoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at(bin.read<int>()-1)) {}
 
 		StableSoftmaxOutput::StableSoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput{ Last } {}
 		float StableSoftmaxOutput::Train(const float * Data) {
@@ -88,7 +88,7 @@ namespace PVX {
 			}
 		}
 
-		StableSoftmaxOutput::StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at((int)bin-1)) {}
+		StableSoftmaxOutput::StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at(bin.read<int>()-1)) {}
 
 		float SoftmaxOutput::GetError(const Eigen::MatrixXf& Data) {
 			Eigen::MatrixXf dif = Data - output;
