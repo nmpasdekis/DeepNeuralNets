@@ -59,7 +59,7 @@ namespace PVX {
 		}
 		ActivationLayer::ActivationLayer(int inp, LayerActivation Activation) : activation{ Activation } {
 			PreviousLayer = nullptr;
-			output = Eigen::MatrixXf{ inp + 1, 1 };
+			output = Eigen::MatrixXf::Ones(inp + 1, 1);
 			switch (Activation) {
 				case LayerActivation::Tanh:
 					Activate = Tanh;
