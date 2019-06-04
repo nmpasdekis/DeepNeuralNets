@@ -1,6 +1,6 @@
-#include <PVX_NeuralNetsCPU.h>
+#include <PVX_GenericSolvers.h>
 
-namespace PVX::DeepNeuralNets {
+namespace PVX::Solvers {
 
 	inline size_t GetModelSize(const std::vector<std::pair<float*, size_t>>& m) {
 		size_t ret = 0;

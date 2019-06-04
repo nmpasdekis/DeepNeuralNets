@@ -1,10 +1,24 @@
 #include<PVX_NeuralNetsCPU.h>
+#include<PVX_GenericSolvers.h>
 #include<iostream>
 
 using namespace PVX::DeepNeuralNets;
+using namespace PVX::Solvers;
 
 using netData = Eigen::MatrixXf;
 
+float Poly(float x, const std::vector<float>& Factors) {
+	float y = Factors[0];
+	for (size_t i = 1; i<Factors.size(); i++) y = y * x + Factors[i];
+	return y;
+}
+
+
+
+int main() {
+
+	return 0;
+}
 
 int main2() {
 	NeuralNetContainer net(L"myXor.nn");
@@ -36,7 +50,7 @@ int main2() {
 	return 0;
 }
 
-int main() {
+int main3() {
 	InputLayer Input("Input", 2);
 	NeuronLayer Hidden1("Hidden1", &Input, 10);
 	NeuronLayer Hidden2("Hidden2", &Hidden1, 10);
