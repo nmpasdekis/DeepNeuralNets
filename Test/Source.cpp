@@ -60,20 +60,15 @@ int main() {
 
 	float Error = 1.0f;
 	int iter = 0;
-	while (Error>1e-7) {
+	while (Error>1e-13) {
 		Error = Network.TrainRaw(InputData, TrainData);
-		if (!(iter++%100)) {
+		if (!(iter++%1000)) {
 			auto r = Network.ProcessRaw(InputData);
-			std::cout << Error << " " << r(0, 0) << "\n";
+			std::cout << "\r" << Error << "                              ";
 		}
 	}
 
-	std::cout << Error << "\n\n" << Network.ProcessRaw(InputData) << "\n\nI know Kung Fu!!!\n\n";
-
-	std::cout << Hidden1.GetWeights() << "\n\n";
-	std::cout << Hidden2.GetWeights() << "\n\n";
-	std::cout << Last.GetWeights() << "\n\n";
-
+	std::cout << "\n" << Error << "\n\n" << Network.ProcessRaw(InputData) << "\n\nI know Kung Fu!!!\n\n";
 
 	Network.Save(L"myXor.nn");
 
