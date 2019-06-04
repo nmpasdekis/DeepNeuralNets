@@ -39,7 +39,7 @@ void Print(const std::vector<float>& v) {
 }
 
 int main() {
-	auto TargetPoly = std::vector<float>{ 1.0f, -2.0f, 3.0f, -4.0f, 5.0f, -6.0f, 7.0f };
+	auto TargetPoly = std::vector<float>{ 1.0f, -2.0f, 3.0f, -4.0f, 5.0f/*, -6.0f, 7.0f, -8.0f*/ };
 	auto Model = std::vector<float>(TargetPoly.size());
 	auto RealValues = std::vector<float>();
 	auto TestValues = std::vector<float>();
@@ -49,9 +49,9 @@ int main() {
 	std::default_random_engine eng;
 	std::normal_distribution<float> dist;
 
-	for (auto& r : RealValues) {
-		r += dist(eng)*0.01f;
-	}
+	//for (auto& r : RealValues) {
+	//	r += dist(eng)*0.01f;
+	//}
 	
 	auto ErrFnc = [&] {
 		Evaluate(TestValues, x, Model);
@@ -66,8 +66,8 @@ int main() {
 		return sum / TestValues.size();
 	};
 
-	auto grad = GradientDescent(ErrFnc, Model.data(), Model.size(), 0.001f);
-	auto gen = GeneticSolver(ErrFnc, Model.data(), Model.size(), 100, 50, 0.5f);
+	auto grad = GradientDescent(ErrFnc, Model.data(), Model.size(), 0.0001f);
+	auto gen = GeneticSolver(ErrFnc, Model.data(), Model.size(), 100, 20, 0.5f);
 
 	gen.OnNewGeneration([&] {
 		grad.ClearMomentum();
