@@ -6,29 +6,29 @@ namespace PVX {
 		void InputLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Begin("INPT"); {
 				if (name.size()) bin.Write("NAME", name);
-				bin.Write("ICNT", nInput());
+				bin.Write("ICNT", int(nInput()));
 			} bin.End();
 		}
 		InputLayer::InputLayer(PVX::BinLoader& bin){
-			size_t ic;
+			int ic;
 			bin.Read("NAME", name);
 			bin.Read("ICNT", ic);
 			bin.Execute();
-			output = Eigen::MatrixXf::Ones(ic + 1, 1);
+			output = Eigen::MatrixXf::Ones(ic + 1ll, 1ll);
 		}
 		InputLayer::InputLayer(const size_t Size) {
 			output = Eigen::MatrixXf::Ones(Size + 1, 1);
 		}
 		InputLayer::InputLayer(const std::string& Name, const size_t Size) {
 			name = Name;
-			output = Eigen::MatrixXf::Ones(Size + 1, 1);
+			output = Eigen::MatrixXf::Ones(Size + 1ll, 1ll);
 		}
 
 
 		int InputLayer::Input(const float * Data, int Count) {
 			if (output.cols() != Count)
 				output = Eigen::MatrixXf::Ones(output.rows(), Count);
-			outPart(output) = Map((float*)Data, output.rows() - 1, output.cols());
+			outPart(output) = Map((float*)Data, output.rows() - 1ll, output.cols());
 			return 1;
 		}
 
@@ -64,11 +64,5 @@ namespace PVX {
 		size_t InputLayer::nInput() {
 			return output.rows() - 1;
 		}
-
-		void InputLayer::Save(PVX::BinSaver & bin) {
-			bin.Write("INPT", (int)output.rows());
-		}
-
-		void InputLayer::Load(PVX::BinLoader & bin) {}
 	}
 }

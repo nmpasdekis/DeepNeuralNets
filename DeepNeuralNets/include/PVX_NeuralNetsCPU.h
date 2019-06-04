@@ -58,16 +58,11 @@ namespace PVX {
 			virtual void BackPropagate(const Eigen::MatrixXf &) = 0;
 			virtual size_t nInput() = 0;
 
-			virtual void Save(PVX::BinSaver & bin) = 0;
-			virtual void Load(PVX::BinLoader & bin) = 0;
-
-
 			int nOutput();
 			int BatchSize();
 			Eigen::MatrixXf Output();
 			Eigen::MatrixXf RealOutput();
 
-			// Default = 0.0001f
 			static float LearnRate();
 			static void LearnRate(float Alpha);
 			static float Momentum();
@@ -107,8 +102,6 @@ namespace PVX {
 			Eigen::MatrixXf MakeRawInput(const float* Data, int Count = 1);
 			Eigen::MatrixXf MakeRawInput(const std::vector<float>& Input);
 
-			void Save(PVX::BinSaver & bin);
-			void Load(PVX::BinLoader & bin);
 			void SetLearnRate(float a) {};
 			void ResetMomentum() {};
 		};
@@ -126,15 +119,11 @@ namespace PVX {
 			Eigen::MatrixXf Weights;
 			Eigen::MatrixXf DeltaWeights;
 			Eigen::MatrixXf RMSprop;
-			//void UpdateWeights(const Eigen::MatrixXf & Gradient);
 			Eigen::MatrixXf(*Activate)(const Eigen::MatrixXf & Gradient);
 			Eigen::MatrixXf(*Derivative)(const Eigen::MatrixXf & Gradient);
 
 			void AdamF(const Eigen::MatrixXf & Gradient);
 			void MomentumF(const Eigen::MatrixXf & Gradient);
-			//void FirstAdamF(const Eigen::MatrixXf & Gradient);
-			//void FirstMomentumF(const Eigen::MatrixXf & Gradient);
-
 
 			void RMSpropF(const Eigen::MatrixXf & Gradient);
 			void SgdF(const Eigen::MatrixXf & Gradient);
@@ -171,8 +160,8 @@ namespace PVX {
 
 			Eigen::MatrixXf & GetWeights();
 
-			void Save(PVX::BinSaver & bin);
-			void Load(PVX::BinLoader & bin);
+			//void Save(PVX::BinSaver & bin);
+			//void Load(PVX::BinLoader & bin);
 		};
 
 		class ActivationLayer :NeuralLayer_Base {
@@ -181,9 +170,6 @@ namespace PVX {
 			Eigen::MatrixXf(*Activate)(const Eigen::MatrixXf& Gradient);
 			Eigen::MatrixXf(*Derivative)(const Eigen::MatrixXf& Gradient);
 			LayerActivation activation;
-
-			void Save(PVX::BinSaver& bin);
-			void Load(PVX::BinLoader& bin);
 
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			static ActivationLayer* Load2(PVX::BinLoader & bin);
@@ -197,7 +183,6 @@ namespace PVX {
 			void SetLearnRate(float a);
 			void ResetMomentum();
 
-			// Inherited via NeuralLayer_Base
 			size_t nInput();
 		};
 
@@ -212,9 +197,6 @@ namespace PVX {
 			void FeedForward(int Version);
 			void BackPropagate(const Eigen::MatrixXf & Gradient);
 			size_t nInput();
-
-			void Save(PVX::BinSaver & bin);
-			void Load(PVX::BinLoader & bin);
 
 			void SetLearnRate(float a);
 			void ResetMomentum();
@@ -232,9 +214,6 @@ namespace PVX {
 			void BackPropagate(const Eigen::MatrixXf & Gradient);
 			size_t nInput();
 
-			void Save(PVX::BinSaver & bin);
-			void Load(PVX::BinLoader & bin);
-
 			void SetLearnRate(float a);
 			void ResetMomentum();
 		};
@@ -251,16 +230,13 @@ namespace PVX {
 			void BackPropagate(const Eigen::MatrixXf & Gradient);
 			size_t nInput();
 
-			void Save(PVX::BinSaver & bin);
-			void Load(PVX::BinLoader & bin);
-
 			void SetLearnRate(float a);
 			void ResetMomentum();
 		};
 
 		class NetDNA {
 			std::vector<WeightData> Layers;
-			int Size;
+			int Size = 0;
 			friend class NeuralNetOutput;
 		public:
 			std::vector<float> GetData();
@@ -271,13 +247,10 @@ namespace PVX {
 		protected:
 			NeuralLayer_Base * LastLayer;
 			Eigen::MatrixXf output;
-			float Error;
+			float Error = -1.0f;
 			int Version = 0;
-
-			virtual void SaveModel(PVX::BinSaver & bin) = 0;
-			virtual void LoadModel(PVX::BinLoader & bin) = 0;
 			NetDNA Checkpoint;
-			float CheckpointError;
+			float CheckpointError = -1.0f;
 			std::vector<float> CheckpointDNA;
 			std::set<NeuralLayer_Base*> Gather();
 
@@ -294,12 +267,6 @@ namespace PVX {
 			const Eigen::MatrixXf& Result();
 			int nOutput();
 
-			void Save(const wchar_t * Filename);
-			void Load(const wchar_t * Filename);
-
-			void SaveNet(const wchar_t* Filename);
-			void LoadNet(const wchar_t* Filename);
-
 			void SaveCheckpoint();
 			float LoadCheckpoint();
 
@@ -311,8 +278,6 @@ namespace PVX {
 		class MeanSquareOutput : public NeuralNetOutput {
 		protected:
 			friend class NeuralNetContainer;
-			void SaveModel(PVX::BinSaver & bin);
-			void LoadModel(PVX::BinLoader & bin);
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			MeanSquareOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*> & Prevs);
 		public:
@@ -326,8 +291,6 @@ namespace PVX {
 		class SoftmaxOutput : public NeuralNetOutput {
 		protected:
 			friend class NeuralNetContainer;
-			void SaveModel(PVX::BinSaver & bin);
-			void LoadModel(PVX::BinLoader & bin);
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			void FeedForward();
 			SoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs);
@@ -341,8 +304,6 @@ namespace PVX {
 		class StableSoftmaxOutput : public NeuralNetOutput {
 		protected:
 			friend class NeuralNetContainer;
-			void SaveModel(PVX::BinSaver & bin);
-			void LoadModel(PVX::BinLoader & bin);
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			void FeedForward();
 			StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs);
@@ -357,7 +318,7 @@ namespace PVX {
 		protected:
 			std::vector<NeuralLayer_Base*> Layers;
 			std::vector<InputLayer*> Inputs;
-			NeuralNetOutput* Output;
+			NeuralNetOutput* Output = nullptr;
 			std::vector<std::pair<float*, size_t>> MakeDNA();
 			friend class GeneticSolver;
 		public:

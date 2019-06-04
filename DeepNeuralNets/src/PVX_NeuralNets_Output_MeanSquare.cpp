@@ -34,15 +34,6 @@ namespace PVX {
 			return Error;
 		}
 
-		void MeanSquareOutput::SaveModel(PVX::BinSaver & bin) {
-			bin.Begin("MSQE"); {
-				LastLayer->Save(bin);
-			} bin.End();
-		}
-
-		void MeanSquareOutput::LoadModel(PVX::BinLoader & bin) {
-
-		}
 		void MeanSquareOutput::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Write("MSQR", int(IndexOf.at(LastLayer)));
 		}

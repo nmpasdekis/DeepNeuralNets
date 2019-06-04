@@ -6,7 +6,7 @@ using namespace PVX::DeepNeuralNets;
 using netData = Eigen::MatrixXf;
 
 
-int main() {
+int main2() {
 	NeuralNetContainer net(L"myXor.nn");
 
 	netData InputData = net.MakeRawInput({
@@ -36,9 +36,7 @@ int main() {
 	return 0;
 }
 
-
-
-int main2() {
+int main() {
 	InputLayer Input("Input", 2);
 	NeuronLayer Hidden1("Hidden1", &Input, 10);
 	NeuronLayer Hidden2("Hidden2", &Hidden1, 10);

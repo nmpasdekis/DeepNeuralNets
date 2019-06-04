@@ -40,18 +40,6 @@ namespace PVX {
 		size_t NeuronAdder::nInput() {
 			return output.rows() - 1;
 		}
-		void NeuronAdder::Save(PVX::BinSaver & bin) {
-			bin.Begin("ADDR"); {
-				for (auto inp : InputLayers)
-					inp->Save(bin);
-			}bin.End();
-		}
-		void NeuronAdder::Load(PVX::BinLoader & bin) {
-			int i = 0;
-			bin.ProcessAny([&i, this](PVX::BinLoader & bin2, auto Type) {
-				this->InputLayers[i++]->Load(bin2);
-			});
-		}
 
 		void NeuronAdder::SetLearnRate(float a) {
 			for (auto l : InputLayers)
@@ -126,19 +114,6 @@ namespace PVX {
 			return output.cols();
 		}
 
-		void NeuronMultiplier::Save(PVX::BinSaver & bin) {
-			bin.Begin("MULT"); {
-				for (auto inp : InputLayers)
-					inp->Save(bin);
-			}bin.End();
-		}
-
-		void NeuronMultiplier::Load(PVX::BinLoader & bin) {
-			int i = 0;
-			bin.ProcessAny([&i, this](PVX::BinLoader & bin2, auto Type) {
-				InputLayers[i++]->Load(bin2);
-			});
-		}
 		void NeuronMultiplier::SetLearnRate(float a) {
 			for (auto i : InputLayers)
 				i->SetLearnRate(a);

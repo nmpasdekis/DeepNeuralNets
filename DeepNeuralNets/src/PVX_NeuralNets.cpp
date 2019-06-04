@@ -76,9 +76,9 @@ namespace PVX::DeepNeuralNets {
 	}
 
 	void NeuralLayer_Base::FixInputs(const std::vector<NeuralLayer_Base*>& ids) {
-		if (PreviousLayer) PreviousLayer = ids[(*(int*)&PreviousLayer)-1];
+		if (PreviousLayer) PreviousLayer = ids[(*(int*)&PreviousLayer)-1ll];
 		else for (auto& l : InputLayers)
-			l = ids[(*(int*)&l)-1];
+			l = ids[(*(int*)&l)-1ll];
 	}
 
 	void NeuralLayer_Base::Input(NeuralLayer_Base* inp) {
@@ -101,7 +101,7 @@ namespace PVX::DeepNeuralNets {
 		output = outPart(tmp);
 	}
 
-	NeuralNetOutput::NeuralNetOutput(NeuralLayer_Base* Last) : LastLayer{ Last }, output{ 1, Last->Output().cols() }, Error{ -1.0f } { }
+	NeuralNetOutput::NeuralNetOutput(NeuralLayer_Base* Last) : LastLayer{ Last }, output{ 1, Last->Output().cols() } { }
 	void NeuralNetOutput::Result(float* res) {
 		auto r = Result();
 		memcpy(res, r.data(), sizeof(float) * r.cols());
@@ -114,21 +114,6 @@ namespace PVX::DeepNeuralNets {
 
 	int NeuralNetOutput::nOutput() {
 		return LastLayer->output.rows() - 1;
-	}
-
-	void NeuralNetOutput::SaveNet(const wchar_t* Filename) {
-		PVX::BinSaver bin(Filename, "MODL");
-		SaveModel(bin);
-		bin.Save();
-	}
-	void NeuralNetOutput::LoadNet(const wchar_t* Filename) {
-		PVX::BinLoader bin(Filename, "MODL");
-		bin.Process("MSQE", [this](auto& bin2) {
-			this->LastLayer->Load(bin2);
-		});
-		bin.Process("SMAX", [this](auto& bin2) {
-			this->LastLayer->Load(bin2);
-		});
 	}
 
 	void NeuralNetOutput::SaveCheckpoint() {
@@ -184,11 +169,11 @@ namespace PVX::DeepNeuralNets {
 			memcpy(w.Weights, &Data[w.Offset], sizeof(float) * w.Count);
 	}
 
-	void NeuralNetOutput::Save(const wchar_t* Filename) {
+	//void NeuralNetOutput::Save(const wchar_t* Filename) {
 
-	}
-	void NeuralNetOutput::Load(const wchar_t* Filename) {
+	//}
+	//void NeuralNetOutput::Load(const wchar_t* Filename) {
 
-	}
+	//}
 
 }

@@ -14,20 +14,9 @@ namespace PVX {
 			else
 				Error = curErr;
 
-			//std::cout << (TrainData - output) << std::endl;
-
 			LastLayer->BackPropagate(TrainData - output);
-			//LastLayer->BackPropagate(output - TrainData);
 			return Error;
 		}
-
-		void SoftmaxOutput::SaveModel(PVX::BinSaver & bin) {
-			bin.Begin("SMAX"); {
-				LastLayer->Save(bin);
-			} bin.End();
-		}
-
-		void SoftmaxOutput::LoadModel(PVX::BinLoader & bin) {}
 
 		void SoftmaxOutput::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Write("SFTM", int(IndexOf.at(LastLayer)));
@@ -55,20 +44,10 @@ namespace PVX {
 			else
 				Error = curErr;
 
-			//std::cout << (TrainData - output) << std::endl;
-
 			LastLayer->BackPropagate(TrainData - output);
-			//LastLayer->BackPropagate(output - TrainData);
 			return Error;
 		}
 
-		void StableSoftmaxOutput::SaveModel(PVX::BinSaver & bin) {
-			bin.Begin("SSMX"); {
-				LastLayer->Save(bin);
-			} bin.End();
-		}
-
-		void StableSoftmaxOutput::LoadModel(PVX::BinLoader & bin) {}
 
 		void StableSoftmaxOutput::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Write("SSFM", int(IndexOf.at(LastLayer)));
@@ -78,7 +57,6 @@ namespace PVX {
 			LastLayer->FeedForward(++Version);
 			Eigen::MatrixXf tmp = LastLayer->Output();
 			output = outPart(tmp);
-			//output = Eigen::exp(outPart(tmp2).array());
 
 			for (auto i = 0; i < output.cols(); i++) {
 				auto r = output.col(i);

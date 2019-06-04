@@ -3,7 +3,7 @@
 
 namespace PVX {
 	namespace DeepNeuralNets {
-		auto RandomBias(int r, int c) {
+		auto RandomBias(size_t r, size_t c) {
 			return Eigen::MatrixXf::Random(r, c).array() * 0.5f + 0.5f;
 		}
 
@@ -136,7 +136,7 @@ namespace PVX {
 			ret->_LearnRate = rate;
 			ret->_RMSprop = rms;
 			ret->_iRMSprop = 1.0f - rms;
-			ret->PreviousLayer = (NeuralLayer_Base*)prev;
+			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(prev);// (NeuralLayer_Base*)prev;
 			return ret;
 		}
 		void NeuronLayer::SetLearnRate(float a) {
@@ -151,47 +151,14 @@ namespace PVX {
 			this->DeltaWeights = Eigen::MatrixXf::Zero(this->DeltaWeights.rows(), this->DeltaWeights.cols());
 			PreviousLayer->ResetMomentum();
 		}
-		void NeuronLayer::Save(PVX::BinSaver & bin) {
-			bin.Begin("LAYR"); {
-				bin.Write("ACTV", (char)activation);
-				bin.Write("TRNG", (char)training);
-				bin.Write("INPC", Weights.rows());
-				bin.Write("OUTC", Weights.cols());
-				bin.Begin("WEIG"); {
-					bin.write(Weights.data(), sizeof(float), Weights.cols() * Weights.rows());
-				} bin.End();
-
-				bin.Begin("INPT"); {
-					PreviousLayer->Save(bin);
-				} bin.End();
-			}bin.End();
-		}
-		void NeuronLayer::Load(PVX::BinLoader & bin) {
-			bin.Process("LAYR", [this](PVX::BinLoader & bin2) {
-				//int Rows, Cols;
-				//bin2.Read("ACTV", *(char*)&this->activation);
-				//bin2.Read("TRNG", *(char*)&this->training);
-				//bin2.Read("INPC", Rows);
-				//bin2.Read("OUTC", Cols);
-				bin2.Process("WEIG", [this](PVX::BinLoader & bin3) {
-					bin3.ReadAll(this->Weights.data());
-					int err = CorrectMat(this->Weights);
-					err = +0.0f;
-				});
-				bin2.Process("INPT", [this](PVX::BinLoader & bin3) {
-					PreviousLayer->Load(bin3);
-				});
-				bin2.Execute();
-			});
-		}
 		static int InitOpenMP = 0;
 
 		NeuronLayer::NeuronLayer(int nInput, int nOutput, LayerActivation Activation, TrainScheme Train, float WeightMax) :
 			training{ Train },
 			activation{ Activation },
-			DeltaWeights{ Eigen::MatrixXf::Zero(nOutput, nInput + 1) },
-			Weights{ Eigen::MatrixXf::Random(nOutput, nInput + 1) },
-			RMSprop{ Eigen::MatrixXf::Ones(nOutput, 1) }
+			DeltaWeights{ Eigen::MatrixXf::Zero(nOutput, nInput + 1ll) },
+			Weights{ Eigen::MatrixXf::Random(nOutput, nInput + 1ll) },
+			RMSprop{ Eigen::MatrixXf::Ones(nOutput, 1ll) }
 		{
 			if (!InitOpenMP) {
 				Eigen::initParallel();
@@ -272,7 +239,7 @@ namespace PVX {
 				if (PVX::DeepNeuralNets::UseDropout && _Dropout < 1.0f) {
 					outPart(output) = 
 						Activate(Weights * inp).array() * 
-						(RandomBias(output.rows() - 1, output.cols()) < _Dropout).cast<float>() * 
+						(RandomBias(output.rows() - 1ll, output.cols()) < _Dropout).cast<float>() * 
 						_iDropout;
 				} else {
 					outPart(output) = Activate(Weights * inp);

@@ -59,7 +59,7 @@ namespace PVX {
 		}
 		ActivationLayer::ActivationLayer(int inp, LayerActivation Activation) : activation{ Activation } {
 			PreviousLayer = nullptr;
-			output = Eigen::MatrixXf::Ones(inp + 1, 1);
+			output = Eigen::MatrixXf::Ones(inp + 1ll, 1);
 			switch (Activation) {
 				case LayerActivation::Tanh:
 					Activate = Tanh;
@@ -98,22 +98,6 @@ namespace PVX {
 		void ActivationLayer::BackPropagate(const Eigen::MatrixXf& Gradient) {
 			Eigen::MatrixXf grad = Gradient.array() * Derivative(outPart(output)).array();
 			PreviousLayer->BackPropagate(outPart(grad));
-		}
-
-		void ActivationLayer::Save(PVX::BinSaver& bin) {
-			bin.Begin("ACTV"); {
-				bin.Write("ACTV", (char)activation);
-				bin.Begin("INPT"); {
-					PreviousLayer->Save(bin);
-				} bin.End();
-			}bin.End();
-		}
-		void ActivationLayer::Load(PVX::BinLoader& bin) {
-			bin.Process("ACTV", [this](PVX::BinLoader & bin2) {
-				bin2.Process("INPT", [this](PVX::BinLoader & bin2) {
-					PreviousLayer->Load(bin2);
-				});
-			});
 		}
 
 		void ActivationLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {

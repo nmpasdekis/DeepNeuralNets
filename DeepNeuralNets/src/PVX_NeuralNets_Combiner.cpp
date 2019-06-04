@@ -24,7 +24,7 @@ namespace PVX {
 		}
 
 		NeuronCombiner::NeuronCombiner(const int inputs) {
-			output = Eigen::MatrixXf::Zero(inputs + 1, 1);
+			output = Eigen::MatrixXf::Zero(inputs + 1ll, 1ll);
 		}
 
 		NeuronCombiner::NeuronCombiner(const std::vector<NeuralLayer_Base*> & inputs) {
@@ -62,20 +62,6 @@ namespace PVX {
 
 		size_t NeuronCombiner::nInput() {
 			return output.rows() - 1;
-		}
-
-		void NeuronCombiner::Save(PVX::BinSaver & bin) {
-			bin.Begin("COMB"); {
-				for (auto inp : InputLayers)
-					inp->Save(bin);
-			}bin.End();
-		}
-
-		void NeuronCombiner::Load(PVX::BinLoader & bin) {
-			int i = 0;
-			bin.ProcessAny([&i, this](PVX::BinLoader & bin2, auto h) {
-				InputLayers[i++]->Load(bin2);
-			});
 		}
 	}
 }
