@@ -1,8 +1,8 @@
-#include <PVX_NeuralNetsCPU.h>
+#include <PVX_GenericSolvers.h>
 #include <iostream>
 #include <limits>
 
-namespace PVX::DeepNeuralNets {
+namespace PVX::Solvers {
 
 #define each(i, count, start) for(int i = (start); i < (count); i++)
 
@@ -66,15 +66,15 @@ namespace PVX::DeepNeuralNets {
 		Memcpy(Survived[0].Model, Updater);
 		Survived[0].Error = ErrorFnc();
 		each(i, Survived.size(), 1) {
-			Survived[i].Model = Survived[i - 1].Model + ModelSize;
+			Survived[i].Model = Survived[i - size_t(1)].Model + ModelSize;
 			for (int j = 0; j < ModelSize; j++)
 				Survived[i].Model[j] = Survived[0].Model[j] + MutationVariance * dist(gen);
 			//Survived[i].Error = ErrorFnc(Survived[i].Model);
 		}
 	}
 
-	GeneticSolver::GeneticSolver(std::function<float()> ErrorFunction, NeuralNetContainer& Model, int Population, int Survive, float MutationVariance, float MutateProbability, float Combine) :
-		GeneticSolver(ErrorFunction, Model.MakeDNA(), Population, Survive, MutationVariance, MutateProbability, Combine) {}
+	//GeneticSolver::GeneticSolver(std::function<float()> ErrorFunction, NeuralNetContainer& Model, int Population, int Survive, float MutationVariance, float MutateProbability, float Combine) :
+	//	GeneticSolver(ErrorFunction, Model.MakeDNA(), Population, Survive, MutationVariance, MutateProbability, Combine) {}
 
 	float GeneticSolver::GetItem(int Index) {
 		Memcpy(Updater, Generation[Index].Model);
@@ -124,7 +124,7 @@ namespace PVX::DeepNeuralNets {
 	float GeneticSolver::Update() {
 		return GetItem(0);
 	}
-	int PVX::DeepNeuralNets::GeneticSolver::BestId() {
+	int GeneticSolver::BestId() {
 		return Generation[0].Index;
 	}
 
