@@ -66,6 +66,9 @@ int main() {
 		return sum / TestValues.size();
 	};
 
+	Model = TargetPoly;
+	float tmpErr = ErrFnc();
+
 	auto grad = GradientDescent(ErrFnc, Model.data(), Model.size(), 0.001f);
 	auto gen = GeneticSolver(ErrFnc, Model.data(), Model.size(), 100, 50, 0.5f);
 
