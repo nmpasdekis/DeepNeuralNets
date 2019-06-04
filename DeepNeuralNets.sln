@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeepNeuralNets", "DeepNeuralNets\DeepNeuralNets.vcxproj", "{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{90A96A2E-D990-46BC-9AC4-B2EB881691F6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "vsProjects\Test\Test.vcxproj", "{90A96A2E-D990-46BC-9AC4-B2EB881691F6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E} = {A35CB4C9-087D-4527-A9F5-CD0D43246F8E}
 		{90A7BCCD-5515-4501-9CBE-5290928F4FEC} = {90A7BCCD-5515-4501-9CBE-5290928F4FEC}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenericSolvers", "GenericSolvers\GenericSolvers.vcxproj", "{90A7BCCD-5515-4501-9CBE-5290928F4FEC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeepNeuralNets", "vsProjects\DeepNeuralNets\DeepNeuralNets.vcxproj", "{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenericSolvers", "vsProjects\GenericSolvers\GenericSolvers.vcxproj", "{90A7BCCD-5515-4501-9CBE-5290928F4FEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +21,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x64.ActiveCfg = Debug|x64
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x64.Build.0 = Debug|x64
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x86.ActiveCfg = Debug|Win32
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x86.Build.0 = Debug|Win32
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x64.ActiveCfg = Release|x64
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x64.Build.0 = Release|x64
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x86.ActiveCfg = Release|Win32
-		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x86.Build.0 = Release|Win32
 		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x64.ActiveCfg = Debug|x64
 		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x64.Build.0 = Debug|x64
 		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Debug|x86.ActiveCfg = Debug|Win32
@@ -37,6 +29,14 @@ Global
 		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x64.Build.0 = Release|x64
 		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x86.ActiveCfg = Release|Win32
 		{90A96A2E-D990-46BC-9AC4-B2EB881691F6}.Release|x86.Build.0 = Release|Win32
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x64.ActiveCfg = Debug|x64
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x64.Build.0 = Debug|x64
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x86.ActiveCfg = Debug|Win32
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Debug|x86.Build.0 = Debug|Win32
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x64.ActiveCfg = Release|x64
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x64.Build.0 = Release|x64
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x86.ActiveCfg = Release|Win32
+		{A35CB4C9-087D-4527-A9F5-CD0D43246F8E}.Release|x86.Build.0 = Release|Win32
 		{90A7BCCD-5515-4501-9CBE-5290928F4FEC}.Debug|x64.ActiveCfg = Debug|x64
 		{90A7BCCD-5515-4501-9CBE-5290928F4FEC}.Debug|x64.Build.0 = Debug|x64
 		{90A7BCCD-5515-4501-9CBE-5290928F4FEC}.Debug|x86.ActiveCfg = Debug|Win32

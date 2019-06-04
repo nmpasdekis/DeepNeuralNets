@@ -43,7 +43,7 @@ int main() {
 	auto Model = std::vector<float>(TargetPoly.size());
 	auto RealValues = std::vector<float>();
 	auto TestValues = std::vector<float>();
-	auto x = Range(-5.0f, 5.0f, 0.1f);
+	auto x = Range(-5.0f, 5.0f, 0.5f);
 	Evaluate(RealValues, x, TargetPoly);
 
 	std::default_random_engine eng;
