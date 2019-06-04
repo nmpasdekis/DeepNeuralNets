@@ -1,6 +1,7 @@
 #include<PVX_NeuralNetsCPU.h>
 #include<PVX_GenericSolvers.h>
 #include<iostream>
+#include <random>
 
 using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
@@ -13,9 +14,80 @@ float Poly(float x, const std::vector<float>& Factors) {
 	return y;
 }
 
+std::vector<float> Range(float from, float to, float step) {
+	size_t sz = (to - from)/step;
+	std::vector<float> ret(sz);
+	for (auto& t : ret) {
+		t = from;
+		from += step;
+	}
+	return std::move(ret);
+}
 
+void Evaluate(std::vector<float>& out, const std::vector<float>& range, const std::vector<float>& Model) {
+	out.resize(range.size());
+#pragma omp parallel for
+	for (auto i = 0; i<range.size(); i++) {
+		out[i] = Poly(range[i], Model);
+	}
+}
+
+void Print(const std::vector<float>& v) {
+	for (auto f : v)
+		printf("%5.2f ", f);
+		//std::cout << f << " ";
+}
 
 int main() {
+	auto TargetPoly = std::vector<float>{ 1.0f, -2.0f, 3.0f, -4.0f, 5.0f, -6.0f };
+	auto Model = std::vector<float>(TargetPoly.size());
+	auto RealValues = std::vector<float>();
+	auto TestValues = std::vector<float>();
+	auto x = Range(-5.0f, 5.0f, 0.1f);
+	Evaluate(RealValues, x, TargetPoly);
+
+	std::default_random_engine eng;
+	std::normal_distribution<float> dist;
+
+	for (auto& r : RealValues) {
+		r += dist(eng)*0.01f;
+	}
+	
+	auto ErrFnc = [&] {
+		Evaluate(TestValues, x, Model);
+
+		float sum = 0;
+#pragma omp parallel for reduction(+:sum)
+		for (auto i = 0; i<TestValues.size(); i++) {
+			float tmp = TestValues[i] - RealValues[i];
+			sum += tmp*tmp;
+		}
+
+		return sum / TestValues.size();
+	};
+
+	auto grad = GradientDescent(ErrFnc, Model.data(), Model.size(), 0.001f);
+	auto gen = GeneticSolver(ErrFnc, Model.data(), Model.size(), 1000, 50, 0.5f);
+
+	gen.OnNewGeneration([&] {
+		grad.ClearMomentum();
+		grad.RecalculateError();
+		float err = 0;
+		for (int i = 0; i<1000; i++)
+			err = grad.Iterate();
+		return err;
+	});
+
+	float Error = 1.0f, LastError = 1.0f;
+
+	while (Error>1e-5) {
+		Error = gen.Iterate();
+		if (Error < LastError) {
+			Print(Model);
+			std::cout << Error << " " << gen.BestId() << "\n";
+		}
+		LastError = Error;
+	}
 
 	return 0;
 }

@@ -69,12 +69,8 @@ namespace PVX::Solvers {
 			Survived[i].Model = Survived[i - size_t(1)].Model + ModelSize;
 			for (int j = 0; j < ModelSize; j++)
 				Survived[i].Model[j] = Survived[0].Model[j] + MutationVariance * dist(gen);
-			//Survived[i].Error = ErrorFnc(Survived[i].Model);
 		}
 	}
-
-	//GeneticSolver::GeneticSolver(std::function<float()> ErrorFunction, NeuralNetContainer& Model, int Population, int Survive, float MutationVariance, float MutateProbability, float Combine) :
-	//	GeneticSolver(ErrorFunction, Model.MakeDNA(), Population, Survive, MutationVariance, MutateProbability, Combine) {}
 
 	float GeneticSolver::GetItem(int Index) {
 		Memcpy(Updater, Generation[Index].Model);

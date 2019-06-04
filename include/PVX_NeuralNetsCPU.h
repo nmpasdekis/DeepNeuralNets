@@ -320,7 +320,6 @@ namespace PVX {
 			std::vector<InputLayer*> Inputs;
 			NeuralNetOutput* Output = nullptr;
 			std::vector<std::pair<float*, size_t>> MakeDNA();
-			friend class GeneticSolver;
 		public:
 			NeuralNetContainer(NeuralNetOutput* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
