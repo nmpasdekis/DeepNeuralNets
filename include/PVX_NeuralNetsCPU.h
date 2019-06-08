@@ -327,6 +327,7 @@ namespace PVX {
 
 			NetDNA GetDNA();
 		};
+
 		class NeuralNetContainer {
 		protected:
 			std::vector<NeuralLayer_Base*> Layers;
@@ -364,6 +365,9 @@ namespace PVX {
 			float ErrorRaw(const std::vector<netData>& inp, const netData& outp);
 
 			std::vector<std::pair<float*, size_t>> MakeDNA();
+
+			void TrainingSessionSetup(const netData& inp, const netData& outp, size_t BatchSize);
+			float Iterate();
 		};
 	}
 }
