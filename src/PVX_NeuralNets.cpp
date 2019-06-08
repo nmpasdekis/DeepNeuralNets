@@ -12,11 +12,11 @@ namespace PVX::DeepNeuralNets {
 	float NeuralLayer_Base::__Dropout = 0.8f;
 	float NeuralLayer_Base::__iDropout = 1.0f / 0.8f;
 
-	Eigen::MatrixXf myRandom(int r, int c, float Max) {
-		return Max * Eigen::MatrixXf::Random(r, c);
+	netData myRandom(int r, int c, float Max) {
+		return Max * netData::Random(r, c);
 	}
 
-	//int Check(Eigen::MatrixXf mat) {
+	//int Check(netData mat) {
 	//	float* dt = mat.data();
 	//	size_t sz = mat.cols() * mat.rows();
 	//	for (auto i = 0; i < sz; i++) {
@@ -28,10 +28,10 @@ namespace PVX::DeepNeuralNets {
 	//	return 1;
 	//}
 
-	Eigen::MatrixXf NeuralLayer_Base::Output() {
+	netData NeuralLayer_Base::Output() {
 		return output;
 	}
-	Eigen::MatrixXf NeuralLayer_Base::RealOutput() {
+	netData NeuralLayer_Base::RealOutput() {
 		return outPart(output);
 	}
 	float NeuralLayer_Base::LearnRate() {
@@ -107,7 +107,7 @@ namespace PVX::DeepNeuralNets {
 		memcpy(res, r.data(), sizeof(float) * r.cols());
 	}
 
-	const Eigen::MatrixXf& NeuralNetOutput_Base::Result() {
+	const netData& NeuralNetOutput_Base::Result() {
 		FeedForward();
 		return output;
 	}

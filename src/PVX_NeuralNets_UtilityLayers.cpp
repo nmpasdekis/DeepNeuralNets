@@ -13,7 +13,7 @@ namespace PVX {
 			bin.End();
 		}
 		NeuronAdder::NeuronAdder(const int InputSize) {
-			output = Eigen::MatrixXf::Zero(InputSize + 1, 1);
+			output = netData::Zero(InputSize + 1, 1);
 		}
 		NeuronAdder::NeuronAdder(const std::vector<NeuralLayer_Base*>& Inputs) : NeuronAdder(Inputs[0]->nOutput()) {
 			for (auto i : Inputs) Input(i);
@@ -30,11 +30,11 @@ namespace PVX {
 					InputLayers[i]->FeedForward(Version);
 					output += InputLayers[i]->Output();
 				}
-				output.row(output.rows() - 1) = Eigen::MatrixXf::Ones(1, output.cols());
+				output.row(output.rows() - 1) = netData::Ones(1, output.cols());
 				FeedVersion = Version;
 			}
 		}
-		void NeuronAdder::BackPropagate(const Eigen::MatrixXf & Gradient) {
+		void NeuronAdder::BackPropagate(const netData & Gradient) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient);
 		}
 		size_t NeuronAdder::nInput() {
@@ -71,12 +71,12 @@ namespace PVX {
 		}
 
 		NeuronMultiplier::NeuronMultiplier(const int inputs) {
-			output = Eigen::MatrixXf::Zero(inputs + 1, 1);
+			output = netData::Zero(inputs + 1, 1);
 		}
 
 		NeuronMultiplier::NeuronMultiplier(const std::vector<NeuralLayer_Base*> & inputs) {
 			for (auto& i : inputs) InputLayers.push_back(i);
-			output = Eigen::MatrixXf::Zero(InputLayers[0]->Output().rows(), 1);
+			output = netData::Zero(InputLayers[0]->Output().rows(), 1);
 		}
 		void NeuronMultiplier::DNA(std::map<void*, WeightData>& Weights) {
 			for (auto l : InputLayers)
@@ -94,7 +94,7 @@ namespace PVX {
 				FeedVersion = Version;
 			}
 		}
-		void NeuronMultiplier::BackPropagate(const Eigen::MatrixXf & Gradient) {
+		void NeuronMultiplier::BackPropagate(const netData & Gradient) {
 			{
 				auto tmp = InputLayers[1]->RealOutput().array();
 				for (auto i = 2; i < InputLayers.size(); i++) {
@@ -123,10 +123,10 @@ namespace PVX {
 				i->ResetMomentum();
 		}
 
-		Eigen::MatrixXf Concat(const std::vector<Eigen::MatrixXf>& M) {
+		netData Concat(const std::vector<netData>& M) {
 			int cols = 0;
 			for (auto& m : M) cols += m.cols();
-			Eigen::MatrixXf ret(M[0].rows(), cols);
+			netData ret(M[0].rows(), cols);
 			size_t offset = 0;
 			for (auto& m : M) {
 				memcpy(ret.data() + offset, m.data(), m.size() * sizeof(float));
@@ -135,8 +135,8 @@ namespace PVX {
 			return ret;
 		}
 
-		std::vector<float> Diverse(Eigen::MatrixXf& a) {
-			Eigen::MatrixXf norm(a.rows(), a.cols());
+		std::vector<float> Diverse(netData& a) {
+			netData norm(a.rows(), a.cols());
 			for (auto i = 0; i<a.cols(); i++)
 				norm.col(i) = a.col(i).normalized();
 
@@ -163,8 +163,8 @@ namespace PVX {
 			return ret;
 		}
 
-		std::vector<float> Divercity(Eigen::MatrixXf& a) {
-			Eigen::MatrixXf norm(a.rows(), a.cols());
+		std::vector<float> Divercity(netData& a) {
+			netData norm(a.rows(), a.cols());
 			for (auto i = 0; i<a.cols(); i++)
 				norm.col(i) = a.col(i).normalized();
 
@@ -180,13 +180,13 @@ namespace PVX {
 			}
 			return n;
 		}
-		Eigen::MatrixXf DivercitySort(Eigen::MatrixXf& a, const std::vector<float>& div) {
+		netData DivercitySort(netData& a, const std::vector<float>& div) {
 			std::vector<std::pair<float, Eigen::RowVectorXf>> all;
 			for (auto i = 0; i< div.size(); i++)
 				all.emplace_back(div[i], a.col(i));
 			
 			std::sort(all.begin(), all.end(), [](auto a, auto b) { return a.first < b.first; });
-			Eigen::MatrixXf ret(a.rows(), a.cols());
+			netData ret(a.rows(), a.cols());
 			for (auto i = 0; i< all.size(); i++)
 				ret.col(i) = all[i].second;
 			return ret;

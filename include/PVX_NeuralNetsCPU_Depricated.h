@@ -11,6 +11,7 @@
 
 namespace PVX {
 	namespace DeepNeuralNets {
+		using netData = Eigen::MatrixXf;
 		enum class LayerActivation {
 			Tanh,
 			TanhBias,

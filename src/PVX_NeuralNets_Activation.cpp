@@ -5,50 +5,50 @@ namespace PVX {
 	namespace DeepNeuralNets {
 				/////////////////////////////////////
 
-		static Eigen::MatrixXf Tanh(const Eigen::MatrixXf& x) {
+		static netData Tanh(const netData& x) {
 			return Eigen::tanh(x.array());
 		}
-		static Eigen::MatrixXf TanhDer(const Eigen::MatrixXf& x) {
+		static netData TanhDer(const netData& x) {
 			auto tmp = Eigen::tanh(x.array());
 			return 1.0f - tmp * tmp;
 		}
-		static Eigen::MatrixXf TanhBias(const Eigen::MatrixXf& x) {
-			Eigen::MatrixXf tmp = Eigen::tanh(x.array());
+		static netData TanhBias(const netData& x) {
+			netData tmp = Eigen::tanh(x.array());
 			auto dt = tmp.data();
 			size_t sz = x.cols()*x.rows();
 			for (auto i = 0; i < sz; i++)
 				dt[i] = dt[i] * 0.5f + 0.5f;
 			return tmp;
 		}
-		static Eigen::MatrixXf TanhBiasDer(const Eigen::MatrixXf & x) {
+		static netData TanhBiasDer(const netData & x) {
 			auto tmp = Eigen::tanh(x.array());
 			return 0.5f* (1.0f - tmp * tmp);
 		}
-		static Eigen::MatrixXf Relu(const Eigen::MatrixXf & x) {
+		static netData Relu(const netData & x) {
 			return x.array()* (x.array() > 0).cast<float>();
 		}
-		static Eigen::MatrixXf ReluDer(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf ret(x.rows(), x.cols());
+		static netData ReluDer(const netData & x) {
+			netData ret(x.rows(), x.cols());
 			float* dt = (float*)x.data();
 			float* o = ret.data();
 			size_t sz = x.cols()*x.rows();
 			for (int i = 0; i < sz; i++) o[i] = (dt[i] > 0) ? 1.0f : 0.0001f;
 			return ret;
 		}
-		static Eigen::MatrixXf Sigmoid(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf ex = Eigen::exp(-x.array());
-			Eigen::MatrixXf ret = 1.0f / (1.0f + ex.array());
+		static netData Sigmoid(const netData & x) {
+			netData ex = Eigen::exp(-x.array());
+			netData ret = 1.0f / (1.0f + ex.array());
 			return ret;
 		}
-		static Eigen::MatrixXf SigmoidDer(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf tmp = Sigmoid(x);
+		static netData SigmoidDer(const netData & x) {
+			netData tmp = Sigmoid(x);
 			return tmp.array()* (1.0f - tmp.array());
 		}
-		static Eigen::MatrixXf Linear(const Eigen::MatrixXf & x) {
+		static netData Linear(const netData & x) {
 			return x;
 		}
-		static Eigen::MatrixXf LinearDer(const Eigen::MatrixXf & x) {
-			return Eigen::MatrixXf::Ones(x.rows(), x.cols());
+		static netData LinearDer(const netData & x) {
+			return netData::Ones(x.rows(), x.cols());
 		}
 
 		////////////////////////////////////
@@ -59,7 +59,7 @@ namespace PVX {
 		}
 		ActivationLayer::ActivationLayer(int inp, LayerActivation Activation) : activation{ Activation } {
 			PreviousLayer = nullptr;
-			output = Eigen::MatrixXf::Ones(inp + 1ll, 1);
+			output = netData::Ones(inp + 1ll, 1);
 			switch (Activation) {
 				case LayerActivation::Tanh:
 					Activate = Tanh;
@@ -88,15 +88,15 @@ namespace PVX {
 				PreviousLayer->FeedForward(Version);
 				auto inp = PreviousLayer->Output();
 				if (inp.cols() != output.cols()) {
-					output = Eigen::MatrixXf::Ones(output.rows(), inp.cols());
+					output = netData::Ones(output.rows(), inp.cols());
 				}
 				
 				outPart(output) = Activate(inp);
 				FeedVersion = Version;
 			}
 		}
-		void ActivationLayer::BackPropagate(const Eigen::MatrixXf& Gradient) {
-			Eigen::MatrixXf grad = Gradient.array() * Derivative(outPart(output)).array();
+		void ActivationLayer::BackPropagate(const netData& Gradient) {
+			netData grad = Gradient.array() * Derivative(outPart(output)).array();
 			PreviousLayer->BackPropagate(outPart(grad));
 		}
 

@@ -11,6 +11,8 @@
 
 namespace PVX {
 	namespace DeepNeuralNets {
+		using netData = Eigen::MatrixXf;
+
 		enum class LayerActivation {
 			Tanh,
 			TanhBias,
@@ -30,7 +32,7 @@ namespace PVX {
 			NeuralLayer_Base* PreviousLayer = nullptr;
 			std::vector<NeuralLayer_Base*> InputLayers;
 
-			Eigen::MatrixXf output;
+			netData output;
 			int FeedVersion = -1;
 			static float
 				__LearnRate,
@@ -57,13 +59,13 @@ namespace PVX {
 			void Input(NeuralLayer_Base*);
 			void Inputs(const std::vector<NeuralLayer_Base*>&);
 			virtual void FeedForward(int) = 0;
-			virtual void BackPropagate(const Eigen::MatrixXf &) = 0;
+			virtual void BackPropagate(const netData &) = 0;
 			virtual size_t nInput() = 0;
 
 			int nOutput();
 			int BatchSize();
-			Eigen::MatrixXf Output();
-			Eigen::MatrixXf RealOutput();
+			netData Output();
+			netData RealOutput();
 
 			static float LearnRate();
 			static void LearnRate(float Alpha);
@@ -79,9 +81,9 @@ namespace PVX {
 			virtual void ResetMomentum() = 0;
 		};
 
-		Eigen::MatrixXf Concat(const std::vector<Eigen::MatrixXf>& m);
-		std::vector<float> Divercity(Eigen::MatrixXf& a);
-		Eigen::MatrixXf DivercitySort(Eigen::MatrixXf& a, const std::vector<float> & div);
+		netData Concat(const std::vector<netData>& m);
+		std::vector<float> Divercity(netData& a);
+		netData DivercitySort(netData& a, const std::vector<float> & div);
 
 
 		class InputLayer : public NeuralLayer_Base {
@@ -94,15 +96,15 @@ namespace PVX {
 			InputLayer(const size_t Size);
 			InputLayer(const std::string& Name, const size_t Size);
 			int Input(const float * Data, int Count = 1);
-			int Input(const Eigen::MatrixXf & Data);
+			int Input(const netData & Data);
 			void FeedForward(int) {}
-			void BackPropagate(const Eigen::MatrixXf & Gradient) {}
+			void BackPropagate(const netData & Gradient) {}
 			size_t nInput();
 
-			void InputRaw(const Eigen::MatrixXf & Data);
-			Eigen::MatrixXf MakeRawInput(const Eigen::MatrixXf & Data);
-			Eigen::MatrixXf MakeRawInput(const float* Data, int Count = 1);
-			Eigen::MatrixXf MakeRawInput(const std::vector<float>& Input);
+			void InputRaw(const netData & Data);
+			netData MakeRawInput(const netData & Data);
+			netData MakeRawInput(const float* Data, int Count = 1);
+			netData MakeRawInput(const std::vector<float>& Input);
 
 			void SetLearnRate(float a) {};
 			void ResetMomentum() {};
@@ -118,20 +120,20 @@ namespace PVX {
 		class NeuronLayer : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
-			Eigen::MatrixXf Weights;
-			Eigen::MatrixXf DeltaWeights;
-			Eigen::MatrixXf RMSprop;
-			Eigen::MatrixXf(*Activate)(const Eigen::MatrixXf & Gradient);
-			Eigen::MatrixXf(*Derivative)(const Eigen::MatrixXf & Gradient);
+			netData Weights;
+			netData DeltaWeights;
+			netData RMSprop;
+			netData(*Activate)(const netData & Gradient);
+			netData(*Derivative)(const netData & Gradient);
 
-			void AdamF(const Eigen::MatrixXf & Gradient);
-			void MomentumF(const Eigen::MatrixXf & Gradient);
+			void AdamF(const netData & Gradient);
+			void MomentumF(const netData & Gradient);
 
-			void RMSpropF(const Eigen::MatrixXf & Gradient);
-			void SgdF(const Eigen::MatrixXf & Gradient);
-			void AdaGradF(const Eigen::MatrixXf & Gradient);
+			void RMSpropF(const netData & Gradient);
+			void SgdF(const netData & Gradient);
+			void AdaGradF(const netData & Gradient);
 
-			void(NeuronLayer::*updateWeights)(const Eigen::MatrixXf & Gradient);
+			void(NeuronLayer::*updateWeights)(const netData & Gradient);
 			TrainScheme training;
 			LayerActivation activation;
 
@@ -154,20 +156,20 @@ namespace PVX {
 			size_t nInput();
 
 			void FeedForward(int Version);
-			void BackPropagate(const Eigen::MatrixXf & TrainData);
+			void BackPropagate(const netData & TrainData);
 
 			void DNA(std::map<void*, WeightData> & Weights);
 			void SetLearnRate(float a);
 			void ResetMomentum();
 
-			Eigen::MatrixXf & GetWeights();
+			netData & GetWeights();
 		};
 
 		class ActivationLayer :NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
-			Eigen::MatrixXf(*Activate)(const Eigen::MatrixXf& Gradient);
-			Eigen::MatrixXf(*Derivative)(const Eigen::MatrixXf& Gradient);
+			netData(*Activate)(const netData& Gradient);
+			netData(*Derivative)(const netData& Gradient);
 			LayerActivation activation;
 
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
@@ -177,7 +179,7 @@ namespace PVX {
 			ActivationLayer(int inp, LayerActivation Activation = LayerActivation::ReLU);
 			
 			void FeedForward(int Version);
-			void BackPropagate(const Eigen::MatrixXf& TrainData);
+			void BackPropagate(const netData& TrainData);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void SetLearnRate(float a);
 			void ResetMomentum();
@@ -194,7 +196,7 @@ namespace PVX {
 			NeuronAdder(const std::vector<NeuralLayer_Base*> & Inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
-			void BackPropagate(const Eigen::MatrixXf & Gradient);
+			void BackPropagate(const netData & Gradient);
 			size_t nInput();
 
 			void SetLearnRate(float a);
@@ -210,7 +212,7 @@ namespace PVX {
 			NeuronMultiplier(const std::vector<NeuralLayer_Base*> & inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
-			void BackPropagate(const Eigen::MatrixXf & Gradient);
+			void BackPropagate(const netData & Gradient);
 			size_t nInput();
 
 			void SetLearnRate(float a);
@@ -226,7 +228,7 @@ namespace PVX {
 			NeuronCombiner(const std::vector<NeuralLayer_Base*> & inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
-			void BackPropagate(const Eigen::MatrixXf & Gradient);
+			void BackPropagate(const netData & Gradient);
 			size_t nInput();
 
 			void SetLearnRate(float a);
@@ -246,7 +248,7 @@ namespace PVX {
 		class NeuralNetOutput_Base {
 		protected:
 			NeuralLayer_Base * LastLayer;
-			Eigen::MatrixXf output;
+			netData output;
 			float Error = -1.0f;
 			int Version = 0;
 			NetDNA Checkpoint;
@@ -261,11 +263,11 @@ namespace PVX {
 			friend class NeuralNetContainer;
 		public:
 			NeuralNetOutput_Base(NeuralLayer_Base * Last);
-			virtual float GetError(const Eigen::MatrixXf & Data) = 0;
+			virtual float GetError(const netData & Data) = 0;
 			virtual float Train(const float * Data) = 0;
-			virtual float Train(const Eigen::MatrixXf & Data) = 0;
+			virtual float Train(const netData & Data) = 0;
 			void Result(float * Result);
-			const Eigen::MatrixXf& Result();
+			const netData& Result();
 			int nOutput();
 
 			void SaveCheckpoint();
@@ -284,7 +286,7 @@ namespace PVX {
 		class OutputLayer {
 		protected:
 			NeuralLayer_Base * LastLayer;
-			Eigen::MatrixXf output;
+			netData output;
 			float Error = -1.0f;
 			int Version = 0;
 			NetDNA Checkpoint;
@@ -301,21 +303,21 @@ namespace PVX {
 			void FeedForwardMeanSquare();
 			void FeedForwardSoftMax();
 			void FeedForwardStableSoftMax();
-			float GetError_MeanSquare(const Eigen::MatrixXf & Data);
-			float Train_MeanSquare(const Eigen::MatrixXf & Data);
-			float GetError_SoftMax(const Eigen::MatrixXf & Data);
-			float Train_SoftMax(const Eigen::MatrixXf & Data);
+			float GetError_MeanSquare(const netData & Data);
+			float Train_MeanSquare(const netData & Data);
+			float GetError_SoftMax(const netData & Data);
+			float Train_SoftMax(const netData & Data);
 
 			std::function<void()> FeedForward;
-			std::function<float(const Eigen::MatrixXf&)> GetErrorFnc;
-			std::function<float(const Eigen::MatrixXf&)> TrainFnc;
+			std::function<float(const netData&)> GetErrorFnc;
+			std::function<float(const netData&)> TrainFnc;
 		public:
 			OutputLayer(NeuralLayer_Base * Last, OutputType Type = OutputType::MeanSquare);
-			float GetError(const Eigen::MatrixXf & Data);
-			float Train(const Eigen::MatrixXf & Data);
+			float GetError(const netData & Data);
+			float Train(const netData & Data);
 			float Train(const float * Data);
 			void Result(float * Result);
-			const Eigen::MatrixXf& Result();
+			const netData& Result();
 			int nOutput();
 
 			void SaveCheckpoint();
@@ -340,27 +342,27 @@ namespace PVX {
 			float LoadCheckpoint();
 			void ResetMomentum();
 
-			Eigen::MatrixXf MakeRawInput(const Eigen::MatrixXf& inp);
-			Eigen::MatrixXf MakeRawInput(const std::vector<float>& inp);
-			std::vector<Eigen::MatrixXf> MakeRawInput(const std::vector<Eigen::MatrixXf>& inp);
-			Eigen::MatrixXf FromVector(const std::vector<float>& Data);
+			netData MakeRawInput(const netData& inp);
+			netData MakeRawInput(const std::vector<float>& inp);
+			std::vector<netData> MakeRawInput(const std::vector<netData>& inp);
+			netData FromVector(const std::vector<float>& Data);
 
 			std::vector<float> ProcessVec(const std::vector<float>& Inp);
 
-			Eigen::MatrixXf Process(const Eigen::MatrixXf& inp);
-			Eigen::MatrixXf Process(const std::vector<Eigen::MatrixXf>& inp);
-			Eigen::MatrixXf ProcessRaw(const Eigen::MatrixXf& inp);
-			Eigen::MatrixXf ProcessRaw(const std::vector<Eigen::MatrixXf>& inp);
+			netData Process(const netData& inp);
+			netData Process(const std::vector<netData>& inp);
+			netData ProcessRaw(const netData& inp);
+			netData ProcessRaw(const std::vector<netData>& inp);
 
-			float Train(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
-			float TrainRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
-			float Train(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
-			float TrainRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
+			float Train(const netData& inp, const netData& outp);
+			float TrainRaw(const netData& inp, const netData& outp);
+			float Train(const std::vector<netData>& inp, const netData& outp);
+			float TrainRaw(const std::vector<netData>& inp, const netData& outp);
 
-			float Error(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
-			float ErrorRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
-			float Error(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
-			float ErrorRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
+			float Error(const netData& inp, const netData& outp);
+			float ErrorRaw(const netData& inp, const netData& outp);
+			float Error(const std::vector<netData>& inp, const netData& outp);
+			float ErrorRaw(const std::vector<netData>& inp, const netData& outp);
 		};
 	}
 }

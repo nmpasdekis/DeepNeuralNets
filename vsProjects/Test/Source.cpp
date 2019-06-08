@@ -6,7 +6,6 @@
 using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
 
-using netData = Eigen::MatrixXf;
 
 int main() {
 	{
@@ -19,15 +18,15 @@ int main() {
 
 		netData InputData = Input.MakeRawInput({
 			1.0f, 0.0f,
-			0.0f, 1.0f,
 			1.0f, 1.0f,
+			0.0f, 1.0f,
 			0.0f, 0.0f
 		});
 
 		netData TrainData = Network.FromVector({
 			1.0f, 0.0f,
-			1.0f, 0.0f,
 			0.0f, 1.0f,
+			1.0f, 0.0f,
 			0.0f, 1.0f
 		});
 

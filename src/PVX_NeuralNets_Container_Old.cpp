@@ -88,23 +88,23 @@ namespace PVX::DeepNeuralNets {
 	void NeuralNetContainer_Old::ResetMomentum() {
 		Output->ResetMomentum();
 	}
-	Eigen::MatrixXf NeuralNetContainer_Old::MakeRawInput(const Eigen::MatrixXf& inp) {
+	netData NeuralNetContainer_Old::MakeRawInput(const netData& inp) {
 		return Inputs[0]->MakeRawInput(inp);
 	}
-	Eigen::MatrixXf NeuralNetContainer_Old::MakeRawInput(const std::vector<float>& inp) {
+	netData NeuralNetContainer_Old::MakeRawInput(const std::vector<float>& inp) {
 		return Inputs[0]->MakeRawInput(inp);
 	}
-	std::vector<Eigen::MatrixXf> NeuralNetContainer_Old::MakeRawInput(const std::vector<Eigen::MatrixXf>& inp) {
-		std::vector<Eigen::MatrixXf> ret;
+	std::vector<netData> NeuralNetContainer_Old::MakeRawInput(const std::vector<netData>& inp) {
+		std::vector<netData> ret;
 		size_t i = 0;
 		for (auto l: Inputs)
 			ret.push_back(l->MakeRawInput(inp[i++]));
 		return ret;
 	}
 
-	Eigen::MatrixXf NeuralNetContainer_Old::FromVector(const std::vector<float>& Data) {
+	netData NeuralNetContainer_Old::FromVector(const std::vector<float>& Data) {
 		auto r = Output->nOutput();
-		Eigen::MatrixXf ret(r, Data.size()/r);
+		netData ret(r, Data.size()/r);
 		memcpy(ret.data(), Data.data(), Data.size() * sizeof(float));
 		return ret;
 	}
@@ -116,64 +116,64 @@ namespace PVX::DeepNeuralNets {
 		return ret;
 	}
 
-	Eigen::MatrixXf NeuralNetContainer_Old::Process(const Eigen::MatrixXf& inp) {
+	netData NeuralNetContainer_Old::Process(const netData& inp) {
 		Inputs[0]->Input(inp);
 		return Output->Result();
 	}
-	Eigen::MatrixXf NeuralNetContainer_Old::Process(const std::vector<Eigen::MatrixXf>& inp) {
+	netData NeuralNetContainer_Old::Process(const std::vector<netData>& inp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		return Output->Result();
 	}
-	Eigen::MatrixXf NeuralNetContainer_Old::ProcessRaw(const Eigen::MatrixXf& inp) {
+	netData NeuralNetContainer_Old::ProcessRaw(const netData& inp) {
 		Inputs[0]->InputRaw(inp);
 		return Output->Result();
 	}
-	Eigen::MatrixXf NeuralNetContainer_Old::ProcessRaw(const std::vector<Eigen::MatrixXf>& inp) {
+	netData NeuralNetContainer_Old::ProcessRaw(const std::vector<netData>& inp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		return Output->Result();
 	}
-	float NeuralNetContainer_Old::Train(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Train(const netData& inp, const netData& outp) {
 		Inputs[0]->Input(inp);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
-	float NeuralNetContainer_Old::TrainRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::TrainRaw(const netData& inp, const netData& outp) {
 		Inputs[0]->InputRaw(inp);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
-	float NeuralNetContainer_Old::Train(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Train(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
-	float NeuralNetContainer_Old::TrainRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::TrainRaw(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
 
-	float NeuralNetContainer_Old::Error(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Error(const netData& inp, const netData& outp) {
 		Inputs[0]->Input(inp);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer_Old::ErrorRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::ErrorRaw(const netData& inp, const netData& outp) {
 		Inputs[0]->InputRaw(inp);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer_Old::Error(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Error(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer_Old::ErrorRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::ErrorRaw(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		Output->FeedForward();

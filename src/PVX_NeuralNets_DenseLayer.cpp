@@ -4,91 +4,91 @@
 namespace PVX {
 	namespace DeepNeuralNets {
 		auto RandomBias(size_t r, size_t c) {
-			return Eigen::MatrixXf::Random(r, c).array() * 0.5f + 0.5f;
+			return netData::Random(r, c).array() * 0.5f + 0.5f;
 		}
 
 		int UseDropout = 0;
 		/////////////////////////////////////
 
-		static Eigen::MatrixXf Tanh(const Eigen::MatrixXf & x) {
+		static netData Tanh(const netData & x) {
 			return Eigen::tanh(x.array());
 		}
-		static Eigen::MatrixXf TanhDer(const Eigen::MatrixXf & x) {
+		static netData TanhDer(const netData & x) {
 			auto tmp = Eigen::tanh(x.array());
 			return 1.0f - tmp * tmp;
 		}
-		static Eigen::MatrixXf TanhBias(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf tmp = Eigen::tanh(x.array());
+		static netData TanhBias(const netData & x) {
+			netData tmp = Eigen::tanh(x.array());
 			auto dt = tmp.data();
 			size_t sz = x.cols()*x.rows();
 			for (auto i = 0; i < sz; i++)
 				dt[i] = dt[i] * 0.5f + 0.5f;
 			return tmp;
 		}
-		static Eigen::MatrixXf TanhBiasDer(const Eigen::MatrixXf & x) {
+		static netData TanhBiasDer(const netData & x) {
 			auto tmp = Eigen::tanh(x.array());
 			return 0.5f * (1.0f - tmp * tmp);
 		}
-		static Eigen::MatrixXf Relu(const Eigen::MatrixXf & x) {
+		static netData Relu(const netData & x) {
 			return x.array() * (x.array() > 0).cast<float>();
 		}
-		static Eigen::MatrixXf ReluDer(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf ret(x.rows(), x.cols());
+		static netData ReluDer(const netData & x) {
+			netData ret(x.rows(), x.cols());
 			float * dt = (float*)x.data();
 			float * o = ret.data();
 			size_t sz = x.cols()*x.rows();
 			for (int i = 0; i < sz; i++) o[i] = (dt[i] > 0) ? 1.0f : 0.0001f;
 			return ret;
 		}
-		static Eigen::MatrixXf Sigmoid(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf ex = Eigen::exp(-x.array());
-			Eigen::MatrixXf ret = 1.0f / (1.0f + ex.array());
+		static netData Sigmoid(const netData & x) {
+			netData ex = Eigen::exp(-x.array());
+			netData ret = 1.0f / (1.0f + ex.array());
 			return ret;
 		}
-		static Eigen::MatrixXf SigmoidDer(const Eigen::MatrixXf & x) {
-			Eigen::MatrixXf tmp = Sigmoid(x);
+		static netData SigmoidDer(const netData & x) {
+			netData tmp = Sigmoid(x);
 			return tmp.array() * (1.0f - tmp.array());
 		}
-		static Eigen::MatrixXf Linear(const Eigen::MatrixXf & x) {
+		static netData Linear(const netData & x) {
 			return x;
 		}
-		static Eigen::MatrixXf LinearDer(const Eigen::MatrixXf & x) {
-			return Eigen::MatrixXf::Ones(x.rows(), x.cols());
+		static netData LinearDer(const netData & x) {
+			return netData::Ones(x.rows(), x.cols());
 		}
 
 		////////////////////////////////////
 
-		void NeuronLayer::AdamF(const Eigen::MatrixXf & Gradient) {
+		void NeuronLayer::AdamF(const netData & Gradient) {
 			auto g1 = Gradient.array();
-			if (RMSprop.cols() != Gradient.cols())RMSprop = Eigen::MatrixXf::Ones(Gradient.rows(), Gradient.cols());
+			if (RMSprop.cols() != Gradient.cols())RMSprop = netData::Ones(Gradient.rows(), Gradient.cols());
 			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
-			Eigen::MatrixXf gr = g1 / ((Eigen::sqrt(RMSprop.array()) + 1e-8));
+			netData gr = g1 / ((Eigen::sqrt(RMSprop.array()) + 1e-8));
 
 			DeltaWeights = (gr * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
 			Weights += DeltaWeights;
 		}
-		void NeuronLayer::MomentumF(const Eigen::MatrixXf & Gradient) {
+		void NeuronLayer::MomentumF(const netData & Gradient) {
 			DeltaWeights = (Gradient * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
 			Weights += DeltaWeights;
 		}
-		void NeuronLayer::RMSpropF(const Eigen::MatrixXf & Gradient) {
+		void NeuronLayer::RMSpropF(const netData & Gradient) {
 			auto g1 = Gradient.array();
 			if (RMSprop.cols() != Gradient.cols())
-				RMSprop = Eigen::MatrixXf::Ones(Gradient.rows(), Gradient.cols());
+				RMSprop = netData::Ones(Gradient.rows(), Gradient.cols());
 			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
-			Eigen::MatrixXf gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
+			netData gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
 
 			Weights += (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
-		void NeuronLayer::SgdF(const Eigen::MatrixXf & Gradient) {
+		void NeuronLayer::SgdF(const netData & Gradient) {
 			Weights += (Gradient * PreviousLayer->Output().transpose() * _LearnRate);
 		}
-		void NeuronLayer::AdaGradF(const Eigen::MatrixXf & Gradient) {
+		void NeuronLayer::AdaGradF(const netData & Gradient) {
 			auto g1 = Gradient.array();
 			if (RMSprop.cols() != Gradient.cols())
-				RMSprop = Eigen::MatrixXf::Ones(Gradient.rows(), Gradient.cols());
+				RMSprop = netData::Ones(Gradient.rows(), Gradient.cols());
 			RMSprop = RMSprop.array() + (g1*g1);
-			Eigen::MatrixXf gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
+			netData gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
 
 			Weights += (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
@@ -128,7 +128,7 @@ namespace PVX {
 			bin.Execute();
 			auto ret = new NeuronLayer(cols-1, rows, LayerActivation(act), TrainScheme(train));
 			if (Name.size()) ret->name = Name;
-			ret->GetWeights() = Eigen::Map<Eigen::MatrixXf>(Weights.data(), rows, cols);
+			ret->GetWeights() = Eigen::Map<netData>(Weights.data(), rows, cols);
 			ret->_Dropout = drop;
 			ret->_iDropout = 1.0f / drop;
 			ret->_Momentum = momentum;
@@ -143,12 +143,12 @@ namespace PVX {
 			_LearnRate = a;
 			PreviousLayer->SetLearnRate(a);
 		}
-		Eigen::MatrixXf& NeuronLayer::GetWeights() {
+		netData& NeuronLayer::GetWeights() {
 			return Weights;
 		}
 		void NeuronLayer::ResetMomentum() {
-			this->RMSprop = Eigen::MatrixXf::Ones(this->RMSprop.rows(), this->RMSprop.cols());
-			this->DeltaWeights = Eigen::MatrixXf::Zero(this->DeltaWeights.rows(), this->DeltaWeights.cols());
+			this->RMSprop = netData::Ones(this->RMSprop.rows(), this->RMSprop.cols());
+			this->DeltaWeights = netData::Zero(this->DeltaWeights.rows(), this->DeltaWeights.cols());
 			PreviousLayer->ResetMomentum();
 		}
 		static int InitOpenMP = 0;
@@ -156,9 +156,9 @@ namespace PVX {
 		NeuronLayer::NeuronLayer(int nInput, int nOutput, LayerActivation Activation, TrainScheme Train, float WeightMax) :
 			training{ Train },
 			activation{ Activation },
-			DeltaWeights{ Eigen::MatrixXf::Zero(nOutput, nInput + 1ll) },
-			Weights{ Eigen::MatrixXf::Random(nOutput, nInput + 1ll) },
-			RMSprop{ Eigen::MatrixXf::Ones(nOutput, 1ll) }
+			DeltaWeights{ netData::Zero(nOutput, nInput + 1ll) },
+			Weights{ netData::Random(nOutput, nInput + 1ll) },
+			RMSprop{ netData::Ones(nOutput, 1ll) }
 		{
 			if (!InitOpenMP) {
 				Eigen::initParallel();
@@ -175,7 +175,7 @@ namespace PVX {
 
 			float randScale = sqrtf(2.0f / (nInput + 1));
 
-			output = Eigen::MatrixXf::Ones(nOutput + 1, 1);
+			output = netData::Ones(nOutput + 1, 1);
 			switch (Activation) {
 			case LayerActivation::Tanh:
 				randScale = sqrtf(1.0f / (nInput + 1));
@@ -234,7 +234,7 @@ namespace PVX {
 				PreviousLayer->FeedForward(Version);
 				auto inp = PreviousLayer->Output();
 				if (inp.cols() != output.cols()) {
-					output = Eigen::MatrixXf::Ones(output.rows(), inp.cols());
+					output = netData::Ones(output.rows(), inp.cols());
 				}
 				if (PVX::DeepNeuralNets::UseDropout && _Dropout < 1.0f) {
 					outPart(output) = 
@@ -248,9 +248,9 @@ namespace PVX {
 			}
 		}
 
-		void NeuronLayer::BackPropagate(const Eigen::MatrixXf & Gradient) {
-			Eigen::MatrixXf grad = Gradient.array() * Derivative(outPart(output)).array();
-			Eigen::MatrixXf prop = Weights.transpose() * grad;
+		void NeuronLayer::BackPropagate(const netData & Gradient) {
+			netData grad = Gradient.array() * Derivative(outPart(output)).array();
+			netData prop = Weights.transpose() * grad;
 			PreviousLayer->BackPropagate(outPart(prop));
 			(this->*updateWeights)(grad);
 		}

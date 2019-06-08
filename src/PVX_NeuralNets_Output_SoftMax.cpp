@@ -5,9 +5,9 @@ namespace PVX {
 	namespace DeepNeuralNets {
 		SoftmaxOutput::SoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput_Base{ Last } {}
 		float SoftmaxOutput::Train(const float * Data) {
-			return Train(Eigen::Map<Eigen::MatrixXf>((float*)Data, 1, output.cols(), Eigen::Stride<0, 0>()));
+			return Train(Eigen::Map<netData>((float*)Data, 1, output.cols(), Eigen::Stride<0, 0>()));
 		}
-		float SoftmaxOutput::Train(const Eigen::MatrixXf & TrainData) {
+		float SoftmaxOutput::Train(const netData & TrainData) {
 			float curErr = -(TrainData.array()* Eigen::log(output.array())).sum() / output.cols();
 			if (Error >= 0)
 				Error = Error * 0.99f + 0.01f * curErr;
@@ -25,9 +25,9 @@ namespace PVX {
 		void SoftmaxOutput::FeedForward() {
 			LastLayer->FeedForward(++Version);
 			auto tmp2 = LastLayer->Output();
-			Eigen::MatrixXf tmp = Eigen::exp(outPart(tmp2).array());
-			Eigen::MatrixXf a = 1.0f / (Eigen::MatrixXf::Ones(1, tmp.rows()) * tmp).array();
-			Eigen::MatrixXf div = Eigen::Map<Eigen::RowVectorXf>(a.data(), a.size()).asDiagonal();
+			netData tmp = Eigen::exp(outPart(tmp2).array());
+			netData a = 1.0f / (netData::Ones(1, tmp.rows()) * tmp).array();
+			netData div = Eigen::Map<Eigen::RowVectorXf>(a.data(), a.size()).asDiagonal();
 			output = (tmp * div);
 		}
 
@@ -35,9 +35,9 @@ namespace PVX {
 
 		StableSoftmaxOutput::StableSoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput_Base{ Last } {}
 		float StableSoftmaxOutput::Train(const float * Data) {
-			return Train(Eigen::Map<Eigen::MatrixXf>((float*)Data, 1, output.cols(), Eigen::Stride<0, 0>()));
+			return Train(Eigen::Map<netData>((float*)Data, 1, output.cols(), Eigen::Stride<0, 0>()));
 		}
-		float StableSoftmaxOutput::Train(const Eigen::MatrixXf & TrainData) {
+		float StableSoftmaxOutput::Train(const netData & TrainData) {
 			float curErr = -(TrainData.array()* Eigen::log(output.array())).sum() / output.cols();
 			if (Error >= 0)
 				Error = Error * 0.99f + 0.01f * curErr;
@@ -55,12 +55,12 @@ namespace PVX {
 
 		void StableSoftmaxOutput::FeedForward() {
 			LastLayer->FeedForward(++Version);
-			Eigen::MatrixXf tmp = LastLayer->Output();
+			netData tmp = LastLayer->Output();
 			output = outPart(tmp);
 
 			for (auto i = 0; i < output.cols(); i++) {
 				auto r = output.col(i);
-				r -= Eigen::MatrixXf::Constant(r.rows(), 1, r.maxCoeff());
+				r -= netData::Constant(r.rows(), 1, r.maxCoeff());
 				r = Eigen::exp(r.array());
 				r *= 1.0f / r.sum();
 			}
@@ -68,11 +68,11 @@ namespace PVX {
 
 		StableSoftmaxOutput::StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput_Base(Prevs.at(bin.read<int>()-1)) {}
 
-		float SoftmaxOutput::GetError(const Eigen::MatrixXf& Data) {
+		float SoftmaxOutput::GetError(const netData& Data) {
 			return -(Data.array()* Eigen::log(output.array())).sum() / output.cols();
 		}
 
-		float StableSoftmaxOutput::GetError(const Eigen::MatrixXf& Data) {
+		float StableSoftmaxOutput::GetError(const netData& Data) {
 			return -(Data.array()* Eigen::log(output.array())).sum() / output.cols();
 		}
 

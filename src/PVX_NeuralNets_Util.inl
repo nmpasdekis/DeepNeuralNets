@@ -1,14 +1,15 @@
 #include <Eigen/dense>
+using netData = Eigen::MatrixXf;
 
-inline Eigen::Block<Eigen::MatrixXf, -1, -1, false> outPart(Eigen::MatrixXf & m) {
+inline Eigen::Block<netData, -1, -1, false> outPart(netData & m) {
 	return m.block(0, 0, m.rows() - 1, m.cols());
 }
 
-inline Eigen::Map<Eigen::MatrixXf> Map(float * data, int Rows, int Cols) {
-	return Eigen::Map< Eigen::MatrixXf>(data, Rows, Cols);
+inline Eigen::Map<netData> Map(float * data, int Rows, int Cols) {
+	return Eigen::Map< netData>(data, Rows, Cols);
 }
 
-inline int CorrectMat(Eigen::MatrixXf& m) {
+inline int CorrectMat(netData& m) {
 	auto sz = m.size();
 	auto* dt = m.data();
 	int cnt = 0;

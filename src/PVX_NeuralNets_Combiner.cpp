@@ -3,10 +3,10 @@
 
 namespace PVX {
 	namespace DeepNeuralNets {
-		static Eigen::MatrixXf makeComb(const std::vector<NeuralLayer_Base*> & inputs) {
+		static netData makeComb(const std::vector<NeuralLayer_Base*> & inputs) {
 			int count = 0;
 			for (auto i : inputs) count += i->nOutput();
-			return Eigen::MatrixXf::Zero(count + 1, 1);
+			return netData::Zero(count + 1, 1);
 		}
 
 		void NeuronCombiner::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
@@ -24,7 +24,7 @@ namespace PVX {
 		}
 
 		NeuronCombiner::NeuronCombiner(const int inputs) {
-			output = Eigen::MatrixXf::Zero(inputs + 1ll, 1ll);
+			output = netData::Zero(inputs + 1ll, 1ll);
 		}
 
 		NeuronCombiner::NeuronCombiner(const std::vector<NeuralLayer_Base*> & inputs) {
@@ -52,7 +52,7 @@ namespace PVX {
 				FeedVersion = Version;
 			}
 		}
-		void NeuronCombiner::BackPropagate(const Eigen::MatrixXf & Gradient) {
+		void NeuronCombiner::BackPropagate(const netData & Gradient) {
 			int Start = 0;
 			for (auto i : InputLayers) {
 				i->BackPropagate(Gradient.block(Start, 0, i->nOutput(), Gradient.cols()));

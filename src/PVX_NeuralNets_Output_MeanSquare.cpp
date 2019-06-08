@@ -5,15 +5,15 @@ namespace PVX {
 	namespace DeepNeuralNets {
 		MeanSquareOutput::MeanSquareOutput(NeuralLayer_Base * Last) : NeuralNetOutput_Base{ Last } {}
 		float MeanSquareOutput::Train(const float * Data) {
-			return Train(Eigen::Map<Eigen::MatrixXf>((float*)Data, 1, output.cols()));;
+			return Train(Eigen::Map<netData>((float*)Data, 1, output.cols()));;
 		}
-		float MeanSquareOutput::GetError(const Eigen::MatrixXf & Data) {
-			Eigen::MatrixXf dif = Data - output;
+		float MeanSquareOutput::GetError(const netData & Data) {
+			netData dif = Data - output;
 			Eigen::Map<Eigen::RowVectorXf> vec(dif.data(), dif.size());
 			return (0.5f * (vec * vec.transpose())(0)) / dif.cols();
 		}
-		float MeanSquareOutput::Train(const Eigen::MatrixXf & TrainData) {
-			Eigen::MatrixXf dif = TrainData - output;
+		float MeanSquareOutput::Train(const netData & TrainData) {
+			netData dif = TrainData - output;
 
 			Eigen::Map<Eigen::RowVectorXf> vec(dif.data(), dif.size());
 
@@ -25,8 +25,8 @@ namespace PVX {
 			LastLayer->BackPropagate(dif);
 			return Error;
 		}
-		float MeanSquareOutput::Train2(const Eigen::MatrixXf & TrainData) {
-			Eigen::MatrixXf dif = TrainData - output;
+		float MeanSquareOutput::Train2(const netData & TrainData) {
+			netData dif = TrainData - output;
 
 			Eigen::Map<Eigen::RowVectorXf> vec(dif.data(), dif.size());
 
