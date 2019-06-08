@@ -332,7 +332,6 @@ namespace PVX {
 			std::vector<NeuralLayer_Base*> Layers;
 			std::vector<InputLayer*> Inputs;
 			OutputLayer* Output = nullptr;
-			std::vector<std::pair<float*, size_t>> MakeDNA();
 		public:
 			NeuralNetContainer(OutputLayer* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
@@ -363,6 +362,8 @@ namespace PVX {
 			float ErrorRaw(const netData& inp, const netData& outp);
 			float Error(const std::vector<netData>& inp, const netData& outp);
 			float ErrorRaw(const std::vector<netData>& inp, const netData& outp);
+
+			std::vector<std::pair<float*, size_t>> MakeDNA();
 		};
 	}
 }

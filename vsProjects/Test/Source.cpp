@@ -6,7 +6,6 @@
 using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
 
-
 int main() {
 	{
 		InputLayer Input("Input", 2);
@@ -36,7 +35,7 @@ int main() {
 			Error = Network.TrainRaw(InputData, TrainData);
 			if (!(iter++%1000)) {
 				auto r = Network.ProcessRaw(InputData);
-				std::cout << "\r" << Error << "                              ";
+				std::cout << "\r" << log10(Error) << "                              ";
 			}
 		}
 

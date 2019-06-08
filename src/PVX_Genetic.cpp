@@ -3,9 +3,7 @@
 #include <limits>
 
 namespace PVX::Solvers {
-
-#define each(i, count, start) for(int i = (start); i < (count); i++)
-
+	
 	inline size_t GetModelSize(const std::vector<std::pair<float*, size_t>>& m) {
 		size_t ret = 0;
 		for (auto [d, s]:m)ret += s;
@@ -65,7 +63,7 @@ namespace PVX::Solvers {
 		Survived[0].Model = &Memory[Population * ModelSize];
 		Memcpy(Survived[0].Model, Updater);
 		Survived[0].Error = ErrorFnc();
-		each(i, Survived.size(), 1) {
+		for(auto i = 1;i<Survived.size();i++){
 			Survived[i].Model = Survived[i - size_t(1)].Model + ModelSize;
 			for (int j = 0; j < ModelSize; j++)
 				Survived[i].Model[j] = Survived[0].Model[j] + MutationVariance * dist(gen);
