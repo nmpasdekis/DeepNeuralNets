@@ -72,14 +72,6 @@ namespace PVX::Solvers {
 		}
 	}
 
-	float GeneticSolver::GetItem(int Index) {
-		Memcpy(Updater, Generation[Index].Model);
-		return Generation[Index].Error;
-	}
-
-	void GeneticSolver::SetItem(int Index) {
-		Memcpy(Generation[Index].Model, Updater);
-	}
 
 	float GeneticSolver::Iterate() {
 		if (curIter == Population) {
@@ -89,15 +81,18 @@ namespace PVX::Solvers {
 			GenId++;
 			GenPc = 0;
 			return Generation[0].Error;
-		} else if (curIter==1 && NewGenEvent) {
-			GetItem(0);
-			auto& g = Generation[1];
-			g.Index = 1;
-			g.Error = NewGenEvent();
-			Memcpy(g.Model, Updater);
-			if (Generation[0].Error > g.Error)
-				std::swap(g, Generation[0]);
-			curIter++;
+		} else if (curIter==1 && NewGenEvent.size()) {
+			for (auto f : NewGenEvent) {
+				GetItem(0);
+				auto& g = Generation[curIter];
+				g.Error = f();
+				g.Index = curIter;
+				if (g.Error<0) g.Error = ErrorFnc();
+				Memcpy(g.Model, Updater);
+				if (Generation[0].Error > g.Error)
+					std::swap(g, Generation[0]);
+				curIter++;
+			}
 			return Generation[0].Error;
 		} else {
 			GenPc = float(curIter) / Population;
@@ -109,8 +104,8 @@ namespace PVX::Solvers {
 				std::swap(g, Generation[0]);
 			curIter++;
 			if (curIter == Population) {
-				std::nth_element(Generation.begin()+1, Generation.begin()+Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
-				//std::partial_sort(Generation.begin()+1, Generation.begin() + Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
+				//std::nth_element(Generation.begin()+1, Generation.begin()+Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
+				std::partial_sort(Generation.begin()+1, Generation.begin() + Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
 				memcpy(Survived[0].Model, Generation[0].Model, sizeof(float) * ModelSize);
 				Survived[0].Error = Generation[0].Error;
 				for (auto i = 1; i<Survive; i++) std::swap(Generation[i], Survived[i]);
@@ -124,9 +119,16 @@ namespace PVX::Solvers {
 	int GeneticSolver::BestId() {
 		return Generation[0].Index;
 	}
+	float GeneticSolver::GetItem(int Index) {
+		Memcpy(Updater, Generation[Index].Model);
+		return Generation[Index].Error;
+	}
+	void GeneticSolver::SetItem(int Index) {
+		Memcpy(Generation[Index].Model, Updater);
+	}
 
 	void GeneticSolver::OnNewGeneration(std::function<float()> Event) {
-		NewGenEvent = Event;
+		NewGenEvent.push_back(Event);
 	}
 
 	void GeneticSolver::SetItem(const float* w, int Index, float err) {

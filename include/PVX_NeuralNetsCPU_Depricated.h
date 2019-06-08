@@ -46,7 +46,7 @@ namespace PVX {
 			friend class NeuralNetOutput_Base;
 			friend class OutputLayer;
 			friend class NeuralNetContainer;
-			
+			friend class NeuralNetContainer_Old;
 			virtual void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) = 0;
 
 			void FixInputs(const std::vector<NeuralLayer_Base*>& ids);
@@ -74,7 +74,7 @@ namespace PVX {
 			static float Dropout();
 			static void Dropout(float Rate);
 			static void UseDropout(int);
-			
+
 			virtual void SetLearnRate(float a) = 0;
 			virtual void ResetMomentum() = 0;
 		};
@@ -86,6 +86,7 @@ namespace PVX {
 
 		class InputLayer : public NeuralLayer_Base {
 		protected:
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			InputLayer(PVX::BinLoader& bin);
@@ -117,6 +118,7 @@ namespace PVX {
 		};
 		class NeuronLayer : public NeuralLayer_Base {
 		protected:
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			Eigen::MatrixXf Weights;
 			Eigen::MatrixXf DeltaWeights;
@@ -137,7 +139,7 @@ namespace PVX {
 
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			static NeuralLayer_Base* Load2(PVX::BinLoader& bin);
-							
+
 			float
 				_LearnRate,
 				_Momentum,
@@ -165,6 +167,7 @@ namespace PVX {
 
 		class ActivationLayer :NeuralLayer_Base {
 		protected:
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			Eigen::MatrixXf(*Activate)(const Eigen::MatrixXf& Gradient);
 			Eigen::MatrixXf(*Derivative)(const Eigen::MatrixXf& Gradient);
@@ -175,7 +178,7 @@ namespace PVX {
 		public:
 			ActivationLayer(NeuralLayer_Base* inp, LayerActivation Activation = LayerActivation::ReLU);
 			ActivationLayer(int inp, LayerActivation Activation = LayerActivation::ReLU);
-			
+
 			void FeedForward(int Version);
 			void BackPropagate(const Eigen::MatrixXf& TrainData);
 			void DNA(std::map<void*, WeightData>& Weights);
@@ -187,6 +190,7 @@ namespace PVX {
 
 		class NeuronAdder : public NeuralLayer_Base {
 		protected:
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 		public:
@@ -203,6 +207,7 @@ namespace PVX {
 
 		class NeuronMultiplier : public NeuralLayer_Base {
 		protected:
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 		public:
@@ -219,6 +224,7 @@ namespace PVX {
 
 		class NeuronCombiner : public NeuralLayer_Base {
 		protected:
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 		public:
@@ -236,7 +242,7 @@ namespace PVX {
 		class NetDNA {
 			std::vector<WeightData> Layers;
 			int Size = 0;
-			friend class NeuralNetOutput_Base; 
+			friend class NeuralNetOutput_Base;
 			friend class OutputLayer;
 		public:
 			std::vector<float> GetData();
@@ -257,7 +263,7 @@ namespace PVX {
 			virtual void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) = 0;
 
 			virtual void FeedForward();
-			
+			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 		public:
 			NeuralNetOutput_Base(NeuralLayer_Base * Last);
@@ -335,6 +341,82 @@ namespace PVX {
 			NeuralNetContainer(OutputLayer* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
 			~NeuralNetContainer();
+			void Save(const std::wstring& Filename);
+			void SaveCheckpoint();
+			float LoadCheckpoint();
+			void ResetMomentum();
+
+			Eigen::MatrixXf MakeRawInput(const Eigen::MatrixXf& inp);
+			Eigen::MatrixXf MakeRawInput(const std::vector<float>& inp);
+			std::vector<Eigen::MatrixXf> MakeRawInput(const std::vector<Eigen::MatrixXf>& inp);
+			Eigen::MatrixXf FromVector(const std::vector<float>& Data);
+
+			std::vector<float> ProcessVec(const std::vector<float>& Inp);
+
+			Eigen::MatrixXf Process(const Eigen::MatrixXf& inp);
+			Eigen::MatrixXf Process(const std::vector<Eigen::MatrixXf>& inp);
+			Eigen::MatrixXf ProcessRaw(const Eigen::MatrixXf& inp);
+			Eigen::MatrixXf ProcessRaw(const std::vector<Eigen::MatrixXf>& inp);
+
+			float Train(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
+			float TrainRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
+			float Train(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
+			float TrainRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
+
+			float Error(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
+			float ErrorRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp);
+			float Error(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
+			float ErrorRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp);
+		};
+		class MeanSquareOutput : public NeuralNetOutput_Base {
+		protected:
+			friend class NeuralNetContainer_Old;
+			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
+			MeanSquareOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*> & Prevs);
+		public:
+			MeanSquareOutput(NeuralLayer_Base * Last);
+			float GetError(const Eigen::MatrixXf & Data);
+			float Train(const float * Data);
+			float Train(const Eigen::MatrixXf & Data);
+			float Train2(const Eigen::MatrixXf & Data);
+		};
+
+		class SoftmaxOutput : public NeuralNetOutput_Base {
+		protected:
+			friend class NeuralNetContainer_Old;
+			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
+			void FeedForward();
+			SoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs);
+		public:
+			SoftmaxOutput(NeuralLayer_Base * Last);
+			float GetError(const Eigen::MatrixXf & Data);
+			float Train(const float * Data);
+			float Train(const Eigen::MatrixXf & Data);
+		};
+
+		class StableSoftmaxOutput : public NeuralNetOutput_Base {
+		protected:
+			friend class NeuralNetContainer_Old;
+			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
+			void FeedForward();
+			StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs);
+		public:
+			StableSoftmaxOutput(NeuralLayer_Base * Last);
+			float GetError(const Eigen::MatrixXf & Data);
+			float Train(const float * Data);
+			float Train(const Eigen::MatrixXf & Data);
+		};
+
+		class NeuralNetContainer_Old {
+		protected:
+			std::vector<NeuralLayer_Base*> Layers;
+			std::vector<InputLayer*> Inputs;
+			NeuralNetOutput_Base* Output = nullptr;
+			std::vector<std::pair<float*, size_t>> MakeDNA();
+		public:
+			NeuralNetContainer_Old(NeuralNetOutput_Base* OutLayer);
+			NeuralNetContainer_Old(const std::wstring& Filename);
+			~NeuralNetContainer_Old();
 			void Save(const std::wstring& Filename);
 			void SaveCheckpoint();
 			float LoadCheckpoint();

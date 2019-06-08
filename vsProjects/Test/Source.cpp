@@ -8,6 +8,75 @@ using namespace PVX::Solvers;
 
 using netData = Eigen::MatrixXf;
 
+int main() {
+	{
+		InputLayer Input("Input", 2);
+		NeuronLayer Hidden1("Hidden1", &Input, 10);
+		NeuronLayer Hidden2("Hidden2", &Hidden1, 10);
+		NeuronLayer Last("Last", &Hidden2, 2);
+		OutputLayer Output(&Last, OutputType::MeanSquare);
+		NeuralNetContainer Network(&Output);
+
+		netData InputData = Input.MakeRawInput({
+			1.0f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+			0.0f, 0.0f
+		});
+
+		netData TrainData = Network.FromVector({
+			1.0f, 0.0f,
+			1.0f, 0.0f,
+			0.0f, 1.0f,
+			0.0f, 1.0f
+		});
+
+		float Error = 1.0f;
+		int iter = 0;
+		while (Error>1e-16) {
+			Error = Network.TrainRaw(InputData, TrainData);
+			if (!(iter++%1000)) {
+				auto r = Network.ProcessRaw(InputData);
+				std::cout << "\r" << Error << "                              ";
+			}
+		}
+
+		std::cout << "\n" << Error << "\n\n" << Network.ProcessRaw(InputData) << "\n\nI know Kung Fu!!!\n\n";
+
+		Network.Save(L"myXor2.nn");
+	}
+	{
+		NeuralNetContainer net(L"myXor2.nn");
+
+		netData InputData = net.MakeRawInput({
+			1.0f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+			0.0f, 0.0f
+		});
+		std::cout << InputData << "\n\n";
+
+		auto res = net.ProcessRaw(InputData);
+		std::cout << res << "\n\n";
+
+		res = net.ProcessRaw(InputData.col(0));
+		std::cout << res << "\n\n";
+
+		res = net.ProcessRaw(InputData.col(1));
+		std::cout << res << "\n\n";
+
+		res = net.ProcessRaw(InputData.col(2));
+		std::cout << res << "\n\n";
+
+		res = net.ProcessRaw(InputData.col(3));
+		std::cout << res << "\n\n";
+	}
+	return 0;
+}
+
+
+
+
 float Poly(float x, const std::vector<float>& Factors) {
 	float y = Factors[0];
 	for (size_t i = 1; i<Factors.size(); i++) y = y * x + Factors[i];
@@ -38,7 +107,7 @@ void Print(const std::vector<float>& v) {
 		//std::cout << f << " ";
 }
 
-int main() {
+int main2() {
 	auto TargetPoly = std::vector<float>{ 1.0f, -2.0f, 3.0f, -4.0f, 5.0f/*, -6.0f, 7.0f, -8.0f*/ };
 	auto Model = std::vector<float>(TargetPoly.size());
 	auto RealValues = std::vector<float>();
@@ -66,8 +135,8 @@ int main() {
 		return sum / TestValues.size();
 	};
 
-	auto grad = GradientDescent(ErrFnc, Model.data(), Model.size(), 0.0001f);
-	auto gen = GeneticSolver(ErrFnc, Model.data(), Model.size(), 100, 20, 0.5f);
+	auto grad = GradientDescent(ErrFnc, Model.data(), Model.size(), 0.00001f);
+	auto gen = GeneticSolver(ErrFnc, Model.data(), Model.size(), 100, 20, 0.05f);
 
 	gen.OnNewGeneration([&] {
 		grad.ClearMomentum();
@@ -77,6 +146,13 @@ int main() {
 			err = grad.Iterate();
 		return err;
 	});
+	gen.OnNewGeneration([&] {
+		for (auto & f : Model) {
+			f = int(f * 10.0f + 0.5f) / 10;
+		}
+		return -1;
+	});
+
 
 	float Error = 1.0f, LastError = 1.0f;
 
@@ -88,75 +164,6 @@ int main() {
 		}
 		LastError = Error;
 	}
-
-	return 0;
-}
-
-int main2() {
-	NeuralNetContainer net(L"myXor.nn");
-
-	netData InputData = net.MakeRawInput({
-		1.0f, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		0.0f, 0.0f
-	});
-	std::cout << InputData << "\n\n";
-
-	//auto res = net.ProcessRaw(InputData);
-	//std::cout << res << "\n\n";
-
-	auto res = net.ProcessRaw(InputData.col(0));
-	std::cout << res << "\n\n";
-
-	res = net.ProcessRaw(InputData.col(1));
-	std::cout << res << "\n\n";
-
-	res = net.ProcessRaw(InputData.col(2));
-	std::cout << res << "\n\n";
-
-	res = net.ProcessRaw(InputData.col(3));
-	std::cout << res << "\n\n";
-
-
-	return 0;
-}
-
-int main3() {
-	InputLayer Input("Input", 2);
-	NeuronLayer Hidden1("Hidden1", &Input, 10);
-	NeuronLayer Hidden2("Hidden2", &Hidden1, 10);
-	NeuronLayer Last("Last", &Hidden2, 2);
-	MeanSquareOutput Output(&Last);
-	NeuralNetContainer Network(&Output);
-
-	netData InputData = Input.MakeRawInput({
-		1.0f, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		0.0f, 0.0f
-	});
-
-	netData TrainData = Network.FromVector({
-		1.0f, 0.0f,
-		1.0f, 0.0f,
-		0.0f, 1.0f,
-		0.0f, 1.0f
-	});
-
-	float Error = 1.0f;
-	int iter = 0;
-	while (Error>1e-13) {
-		Error = Network.TrainRaw(InputData, TrainData);
-		if (!(iter++%1000)) {
-			auto r = Network.ProcessRaw(InputData);
-			std::cout << "\r" << Error << "                              ";
-		}
-	}
-
-	std::cout << "\n" << Error << "\n\n" << Network.ProcessRaw(InputData) << "\n\nI know Kung Fu!!!\n\n";
-
-	Network.Save(L"myXor.nn");
 
 	return 0;
 }

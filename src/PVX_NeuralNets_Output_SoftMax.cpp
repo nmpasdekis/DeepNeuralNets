@@ -1,9 +1,9 @@
-#include <PVX_NeuralNetsCPU.h>
+#include <PVX_NeuralNetsCPU_Depricated.h>
 #include "PVX_NeuralNets_Util.inl"
 
 namespace PVX {
 	namespace DeepNeuralNets {
-		SoftmaxOutput::SoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput{ Last } {}
+		SoftmaxOutput::SoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput_Base{ Last } {}
 		float SoftmaxOutput::Train(const float * Data) {
 			return Train(Eigen::Map<Eigen::MatrixXf>((float*)Data, 1, output.cols(), Eigen::Stride<0, 0>()));
 		}
@@ -31,9 +31,9 @@ namespace PVX {
 			output = (tmp * div);
 		}
 
-		SoftmaxOutput::SoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at(bin.read<int>()-1)) {}
+		SoftmaxOutput::SoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput_Base(Prevs.at(bin.read<int>()-1)) {}
 
-		StableSoftmaxOutput::StableSoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput{ Last } {}
+		StableSoftmaxOutput::StableSoftmaxOutput(NeuralLayer_Base * Last) : NeuralNetOutput_Base{ Last } {}
 		float StableSoftmaxOutput::Train(const float * Data) {
 			return Train(Eigen::Map<Eigen::MatrixXf>((float*)Data, 1, output.cols(), Eigen::Stride<0, 0>()));
 		}
@@ -66,18 +66,14 @@ namespace PVX {
 			}
 		}
 
-		StableSoftmaxOutput::StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at(bin.read<int>()-1)) {}
+		StableSoftmaxOutput::StableSoftmaxOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput_Base(Prevs.at(bin.read<int>()-1)) {}
 
 		float SoftmaxOutput::GetError(const Eigen::MatrixXf& Data) {
-			Eigen::MatrixXf dif = Data - output;
-			Eigen::Map<Eigen::RowVectorXf> vec(dif.data(), dif.size());
-			return (0.5f * (vec * vec.transpose())(0)) / dif.cols();
+			return -(Data.array()* Eigen::log(output.array())).sum() / output.cols();
 		}
 
 		float StableSoftmaxOutput::GetError(const Eigen::MatrixXf& Data) {
-			Eigen::MatrixXf dif = Data - output;
-			Eigen::Map<Eigen::RowVectorXf> vec(dif.data(), dif.size());
-			return (0.5f * (vec * vec.transpose())(0)) / dif.cols();
+			return -(Data.array()* Eigen::log(output.array())).sum() / output.cols();
 		}
 
 	}

@@ -1,7 +1,7 @@
-#include <PVX_NeuralNetsCPU.h>
+#include <PVX_NeuralNetsCPU_Depricated.h>
 
 namespace PVX::DeepNeuralNets {
-	std::vector<std::pair<float*, size_t>> NeuralNetContainer::MakeDNA() {
+	std::vector<std::pair<float*, size_t>> NeuralNetContainer_Old::MakeDNA() {
 		std::vector<std::pair<float*, size_t>> ret;
 		for (auto l :Output->Gather()) {
 			if (auto d = dynamic_cast<NeuronLayer*>(l); d) {
@@ -11,14 +11,14 @@ namespace PVX::DeepNeuralNets {
 		};
 		return ret;
 	}
-	NeuralNetContainer::NeuralNetContainer(OutputLayer* OutLayer) : Output{ OutLayer } {
+	NeuralNetContainer_Old::NeuralNetContainer_Old(NeuralNetOutput_Base* OutLayer) : Output{ OutLayer } {
 		auto all = OutLayer->Gather();
 		for (auto l : all) {
 			auto Inp = dynamic_cast<InputLayer*>(l);
 			if (Inp) Inputs.push_back(Inp);
 		}
 	}
-	NeuralNetContainer::NeuralNetContainer(const std::wstring& Filename) {
+	NeuralNetContainer_Old::NeuralNetContainer_Old(const std::wstring& Filename) {
 		PVX::BinLoader bin(Filename.c_str(), "NWRK");
 		bin.Process("LYRS", [&](PVX::BinLoader& bin2) {
 			bin2.Process("ACTV", [&](PVX::BinLoader& bin3) {
@@ -32,11 +32,15 @@ namespace PVX::DeepNeuralNets {
 			});
 		});
 		bin.Process("OUTP", [&](PVX::BinLoader& bin2) {
-			int tp, last;
-			bin2.Read("TYPE", tp);
-			bin2.Read("LAST", last);
-			bin2.Execute();
-			Output = new OutputLayer(Layers.at(last-1), OutputType(tp));
+			bin2.Process("MSQR", [&](PVX::BinLoader& bin3) {
+				Output = new MeanSquareOutput(bin3, Layers);
+			});
+			bin2.Process("SFTM", [&](PVX::BinLoader& bin3) {
+				Output = new SoftmaxOutput(bin3, Layers);
+			});
+			bin2.Process("SSFM", [&](PVX::BinLoader& bin3) {
+				Output = new StableSoftmaxOutput(bin3, Layers);
+			});
 		});
 		bin.Execute();
 		for (auto l:Layers) {
@@ -45,13 +49,13 @@ namespace PVX::DeepNeuralNets {
 			if (in)Inputs.push_back(in);
 		}
 	}
-	NeuralNetContainer::~NeuralNetContainer() {
+	NeuralNetContainer_Old::~NeuralNetContainer_Old() {
 		if (Layers.size()) {
 			delete Output;
 			for (auto l: Layers) delete l;
 		}
 	}
-	void NeuralNetContainer::Save(const std::wstring& Filename) {
+	void NeuralNetContainer_Old::Save(const std::wstring& Filename) {
 		std::map<NeuralLayer_Base*, size_t> g;
 		std::vector<NeuralLayer_Base*> all;
 		{
@@ -75,22 +79,22 @@ namespace PVX::DeepNeuralNets {
 		} 
 		bin.End();
 	}
-	void NeuralNetContainer::SaveCheckpoint() {
+	void NeuralNetContainer_Old::SaveCheckpoint() {
 		Output->SaveCheckpoint();
 	}
-	float NeuralNetContainer::LoadCheckpoint() { 
+	float NeuralNetContainer_Old::LoadCheckpoint() { 
 		return Output->LoadCheckpoint();
 	}
-	void NeuralNetContainer::ResetMomentum() {
+	void NeuralNetContainer_Old::ResetMomentum() {
 		Output->ResetMomentum();
 	}
-	Eigen::MatrixXf NeuralNetContainer::MakeRawInput(const Eigen::MatrixXf& inp) {
+	Eigen::MatrixXf NeuralNetContainer_Old::MakeRawInput(const Eigen::MatrixXf& inp) {
 		return Inputs[0]->MakeRawInput(inp);
 	}
-	Eigen::MatrixXf NeuralNetContainer::MakeRawInput(const std::vector<float>& inp) {
+	Eigen::MatrixXf NeuralNetContainer_Old::MakeRawInput(const std::vector<float>& inp) {
 		return Inputs[0]->MakeRawInput(inp);
 	}
-	std::vector<Eigen::MatrixXf> NeuralNetContainer::MakeRawInput(const std::vector<Eigen::MatrixXf>& inp) {
+	std::vector<Eigen::MatrixXf> NeuralNetContainer_Old::MakeRawInput(const std::vector<Eigen::MatrixXf>& inp) {
 		std::vector<Eigen::MatrixXf> ret;
 		size_t i = 0;
 		for (auto l: Inputs)
@@ -98,78 +102,78 @@ namespace PVX::DeepNeuralNets {
 		return ret;
 	}
 
-	Eigen::MatrixXf NeuralNetContainer::FromVector(const std::vector<float>& Data) {
+	Eigen::MatrixXf NeuralNetContainer_Old::FromVector(const std::vector<float>& Data) {
 		auto r = Output->nOutput();
 		Eigen::MatrixXf ret(r, Data.size()/r);
 		memcpy(ret.data(), Data.data(), Data.size() * sizeof(float));
 		return ret;
 	}
 
-	std::vector<float> NeuralNetContainer::ProcessVec(const std::vector<float>& Inp) {
+	std::vector<float> NeuralNetContainer_Old::ProcessVec(const std::vector<float>& Inp) {
 		auto tmp = ProcessRaw(Inputs[0]->MakeRawInput(Inp));
 		std::vector<float> ret(tmp.size());
 		memcpy(ret.data(), tmp.data(), ret.size() * sizeof(float));
 		return ret;
 	}
 
-	Eigen::MatrixXf NeuralNetContainer::Process(const Eigen::MatrixXf& inp) {
+	Eigen::MatrixXf NeuralNetContainer_Old::Process(const Eigen::MatrixXf& inp) {
 		Inputs[0]->Input(inp);
 		return Output->Result();
 	}
-	Eigen::MatrixXf NeuralNetContainer::Process(const std::vector<Eigen::MatrixXf>& inp) {
+	Eigen::MatrixXf NeuralNetContainer_Old::Process(const std::vector<Eigen::MatrixXf>& inp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		return Output->Result();
 	}
-	Eigen::MatrixXf NeuralNetContainer::ProcessRaw(const Eigen::MatrixXf& inp) {
+	Eigen::MatrixXf NeuralNetContainer_Old::ProcessRaw(const Eigen::MatrixXf& inp) {
 		Inputs[0]->InputRaw(inp);
 		return Output->Result();
 	}
-	Eigen::MatrixXf NeuralNetContainer::ProcessRaw(const std::vector<Eigen::MatrixXf>& inp) {
+	Eigen::MatrixXf NeuralNetContainer_Old::ProcessRaw(const std::vector<Eigen::MatrixXf>& inp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		return Output->Result();
 	}
-	float NeuralNetContainer::Train(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Train(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
 		Inputs[0]->Input(inp);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
-	float NeuralNetContainer::TrainRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::TrainRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
 		Inputs[0]->InputRaw(inp);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
-	float NeuralNetContainer::Train(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Train(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
-	float NeuralNetContainer::TrainRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::TrainRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		Output->FeedForward();
 		return Output->Train(outp);
 	}
 
-	float NeuralNetContainer::Error(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Error(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
 		Inputs[0]->Input(inp);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer::ErrorRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::ErrorRaw(const Eigen::MatrixXf& inp, const Eigen::MatrixXf& outp) {
 		Inputs[0]->InputRaw(inp);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer::Error(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::Error(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer::ErrorRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
+	float NeuralNetContainer_Old::ErrorRaw(const std::vector<Eigen::MatrixXf>& inp, const Eigen::MatrixXf& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		Output->FeedForward();

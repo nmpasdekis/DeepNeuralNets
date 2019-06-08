@@ -1,9 +1,9 @@
-#include <PVX_NeuralNetsCPU.h>
+#include <PVX_NeuralNetsCPU_Depricated.h>
 #include "PVX_NeuralNets_Util.inl"
 
 namespace PVX {
 	namespace DeepNeuralNets {
-		MeanSquareOutput::MeanSquareOutput(NeuralLayer_Base * Last) : NeuralNetOutput{ Last } {}
+		MeanSquareOutput::MeanSquareOutput(NeuralLayer_Base * Last) : NeuralNetOutput_Base{ Last } {}
 		float MeanSquareOutput::Train(const float * Data) {
 			return Train(Eigen::Map<Eigen::MatrixXf>((float*)Data, 1, output.cols()));;
 		}
@@ -37,6 +37,6 @@ namespace PVX {
 		void MeanSquareOutput::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 			bin.Write("MSQR", int(IndexOf.at(LastLayer)));
 		}
-		MeanSquareOutput::MeanSquareOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput(Prevs.at(bin.read<int>()-1)) {}
+		MeanSquareOutput::MeanSquareOutput(PVX::BinLoader& bin, const std::vector<NeuralLayer_Base*>& Prevs) :NeuralNetOutput_Base(Prevs.at(bin.read<int>()-1)) {}
 	}
 }

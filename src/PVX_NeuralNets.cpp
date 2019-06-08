@@ -89,34 +89,34 @@ namespace PVX::DeepNeuralNets {
 		InputLayers = inp;
 	}
 
-	std::set<NeuralLayer_Base*> NeuralNetOutput::Gather() {
+	std::set<NeuralLayer_Base*> NeuralNetOutput_Base::Gather() {
 		std::set<NeuralLayer_Base*> g;
 		LastLayer->Gather(g);
 		return g;
 	}
 
-	void NeuralNetOutput::FeedForward() {
+	void NeuralNetOutput_Base::FeedForward() {
 		LastLayer->FeedForward(++Version);
 		auto tmp = LastLayer->Output();
 		output = outPart(tmp);
 	}
 
-	NeuralNetOutput::NeuralNetOutput(NeuralLayer_Base* Last) : LastLayer{ Last }, output{ 1, Last->Output().cols() } { }
-	void NeuralNetOutput::Result(float* res) {
+	NeuralNetOutput_Base::NeuralNetOutput_Base(NeuralLayer_Base* Last) : LastLayer{ Last }, output{ 1, Last->Output().cols() } { }
+	void NeuralNetOutput_Base::Result(float* res) {
 		auto r = Result();
 		memcpy(res, r.data(), sizeof(float) * r.cols());
 	}
 
-	const Eigen::MatrixXf& NeuralNetOutput::Result() {
+	const Eigen::MatrixXf& NeuralNetOutput_Base::Result() {
 		FeedForward();
 		return output;
 	}
 
-	int NeuralNetOutput::nOutput() {
+	int NeuralNetOutput_Base::nOutput() {
 		return LastLayer->output.rows() - 1;
 	}
 
-	void NeuralNetOutput::SaveCheckpoint() {
+	void NeuralNetOutput_Base::SaveCheckpoint() {
 		if (Checkpoint.Layers.size()==0) {
 			Checkpoint = GetDNA();
 		}
@@ -124,13 +124,13 @@ namespace PVX::DeepNeuralNets {
 		CheckpointError = Error;
 	}
 
-	float NeuralNetOutput::LoadCheckpoint() {
+	float NeuralNetOutput_Base::LoadCheckpoint() {
 		Error = CheckpointError;
 		Checkpoint.SetData(CheckpointDNA.data());
 		return Error;
 	}
 
-	void NeuralNetOutput::ResetMomentum() {
+	void NeuralNetOutput_Base::ResetMomentum() {
 		LastLayer->ResetMomentum();
 	}
 
@@ -144,7 +144,7 @@ namespace PVX::DeepNeuralNets {
 		PreviousLayer->DNA(w);
 	}
 
-	NetDNA NeuralNetOutput::GetDNA() {
+	NetDNA NeuralNetOutput_Base::GetDNA() {
 		std::map<void*, WeightData> data;
 		LastLayer->DNA(data);
 		NetDNA ret;
@@ -169,10 +169,10 @@ namespace PVX::DeepNeuralNets {
 			memcpy(w.Weights, &Data[w.Offset], sizeof(float) * w.Count);
 	}
 
-	//void NeuralNetOutput::Save(const wchar_t* Filename) {
+	//void NeuralNetOutput_Base::Save(const wchar_t* Filename) {
 
 	//}
-	//void NeuralNetOutput::Load(const wchar_t* Filename) {
+	//void NeuralNetOutput_Base::Load(const wchar_t* Filename) {
 
 	//}
 

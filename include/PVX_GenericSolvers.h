@@ -49,7 +49,7 @@ namespace PVX {
 			void NextGeneration();
 			std::vector<std::pair<float*, size_t>> Updater;
 
-			std::function<float()> NewGenEvent = nullptr;
+			std::vector<std::function<float()>> NewGenEvent;
 		public:
 			GeneticSolver(
 				std::function<float()> ErrorFunction,
@@ -68,15 +68,6 @@ namespace PVX {
 				float MutationVariance = 1e-5f,
 				float MutateProbability = 0.1f,
 				float Combine = 0.5f);
-
-			//GeneticSolver(
-			//	std::function<float()> ErrorFunction,
-			//	NeuralNetContainer& Model,
-			//	int Population = 100,
-			//	int Survive = 10,
-			//	float MutationVariance = 1e-5f,
-			//	float MutateProbability = 0.1f,
-			//	float Combine = 0.5f);
 
 			void SetItem(const float* w, int Index = 1, float err = -1.0f);
 			float Iterate();
