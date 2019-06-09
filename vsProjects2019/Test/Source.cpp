@@ -8,6 +8,7 @@ using namespace PVX::Solvers;
 
 int main() {
 	{
+		NeuralLayer_Base::L2Regularization(1.0f);
 		InputLayer Input("Input", 2);
 		NeuronLayer Hidden1("Hidden1", &Input, 10);
 		NeuronLayer Hidden2("Hidden2", &Hidden1, 10);

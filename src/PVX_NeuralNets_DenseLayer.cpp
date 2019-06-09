@@ -101,11 +101,11 @@ namespace PVX {
 			netData gr = g1 / ((Eigen::sqrt(RMSprop.array()) + 1e-8));
 
 			DeltaWeights = (gr * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
-			Weights = Weights * _WeightDecay + DeltaWeights;
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + DeltaWeights;
 		}
 		void NeuronLayer::Momentum_WeightDecayF(const netData& Gradient) {
 			DeltaWeights = (Gradient * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
-			Weights = Weights * _WeightDecay + DeltaWeights;
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + DeltaWeights;
 		}
 		void NeuronLayer::RMSprop_WeightDecayF(const netData& Gradient) {
 			auto g1 = Gradient.array();
@@ -114,10 +114,10 @@ namespace PVX {
 			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
 			netData gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
 
-			Weights = Weights * _WeightDecay + (gr * PreviousLayer->Output().transpose() * _LearnRate);
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
 		void NeuronLayer::Sgd_WeightDecayF(const netData& Gradient) {
-			Weights = Weights * _WeightDecay + (Gradient * PreviousLayer->Output().transpose() * _LearnRate);
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + (Gradient * PreviousLayer->Output().transpose() * _LearnRate);
 		}
 		void NeuronLayer::AdaGrad_WeightDecayF(const netData& Gradient) {
 			auto g1 = Gradient.array();
@@ -126,7 +126,7 @@ namespace PVX {
 			RMSprop = RMSprop.array() + (g1*g1);
 			netData gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
 
-			Weights = Weights * _WeightDecay + (gr * PreviousLayer->Output().transpose() * _LearnRate);
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
 
 		////////////////////////////////////
@@ -211,6 +211,7 @@ namespace PVX {
 			_iRMSprop = __iRMSprop;
 			_Dropout = __Dropout;
 			_iDropout = __iDropout;
+			_L2 = __L2;
 
 			float randScale = sqrtf(2.0f / (nInput + 1));
 
@@ -241,7 +242,7 @@ namespace PVX {
 				break;
 			}
 			Weights *= randScale;
-			if (_WeightDecay>=1.0f) {
+			if (_L2>0.0f) {
 				switch (Train) {
 					case TrainScheme::Adam: updateWeights = &NeuronLayer::AdamF; break;
 					case TrainScheme::RMSprop: updateWeights = &NeuronLayer::RMSpropF; break;

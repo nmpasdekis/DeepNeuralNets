@@ -42,7 +42,7 @@ namespace PVX {
 				__iRMSprop,
 				__Dropout,
 				__iDropout,
-				__WeightDecay;
+				__L2;
 
 			void Gather(std::set<NeuralLayer_Base*>& g);
 
@@ -74,7 +74,7 @@ namespace PVX {
 			static void Momentum(float Beta);
 			static float RMSprop();
 			static void RMSprop(float Beta);
-			static void WeightDecay(float d);
+			static void L2Regularization(float lambda);
 			static float Dropout();
 			static void Dropout(float Rate);
 			static void UseDropout(int);
@@ -155,7 +155,7 @@ namespace PVX {
 				_iRMSprop,
 				_Dropout,
 				_iDropout,
-				_WeightDecay;
+				_L2;
 		public:
 			NeuronLayer(int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
 			NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
