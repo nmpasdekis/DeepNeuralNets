@@ -31,6 +31,7 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output_MeanSquare.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output_SoftMax.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_UtilityLayers.cpp" />
+    <ClCompile Include="..\..\src\PVX_Training.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\PVX_NeuralNets_Util.inl" />

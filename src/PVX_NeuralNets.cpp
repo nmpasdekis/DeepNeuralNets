@@ -11,6 +11,7 @@ namespace PVX::DeepNeuralNets {
 	float NeuralLayer_Base::__iRMSprop = 0.1f;
 	float NeuralLayer_Base::__Dropout = 0.8f;
 	float NeuralLayer_Base::__iDropout = 1.0f / 0.8f;
+	float NeuralLayer_Base::__WeightDecay = 1.0f;
 
 	netData myRandom(int r, int c, float Max) {
 		return Max * netData::Random(r, c);
@@ -53,6 +54,9 @@ namespace PVX::DeepNeuralNets {
 	void NeuralLayer_Base::RMSprop(float Beta) {
 		__RMSprop = Beta;
 		__iRMSprop = 1.0f - Beta;
+	}
+	void NeuralLayer_Base::WeightDecay(float d) {
+		__WeightDecay = d;
 	}
 	float NeuralLayer_Base::Dropout() {
 		return __Dropout;

@@ -41,7 +41,8 @@ namespace PVX {
 				__RMSprop,
 				__iRMSprop,
 				__Dropout,
-				__iDropout;
+				__iDropout,
+				__WeightDecay;
 
 			void Gather(std::set<NeuralLayer_Base*>& g);
 
@@ -73,6 +74,7 @@ namespace PVX {
 			static void Momentum(float Beta);
 			static float RMSprop();
 			static void RMSprop(float Beta);
+			static void WeightDecay(float d);
 			static float Dropout();
 			static void Dropout(float Rate);
 			static void UseDropout(int);
@@ -128,10 +130,15 @@ namespace PVX {
 
 			void AdamF(const netData & Gradient);
 			void MomentumF(const netData & Gradient);
-
 			void RMSpropF(const netData & Gradient);
 			void SgdF(const netData & Gradient);
 			void AdaGradF(const netData & Gradient);
+
+			void Adam_WeightDecayF(const netData& Gradient);
+			void Momentum_WeightDecayF(const netData& Gradient);
+			void RMSprop_WeightDecayF(const netData& Gradient);
+			void Sgd_WeightDecayF(const netData& Gradient);
+			void AdaGrad_WeightDecayF(const netData& Gradient);
 
 			void(NeuronLayer::*updateWeights)(const netData & Gradient);
 			TrainScheme training;
@@ -147,7 +154,8 @@ namespace PVX {
 				_RMSprop,
 				_iRMSprop,
 				_Dropout,
-				_iDropout;
+				_iDropout,
+				_WeightDecay;
 		public:
 			NeuronLayer(int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
 			NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
@@ -333,6 +341,9 @@ namespace PVX {
 			std::vector<NeuralLayer_Base*> Layers;
 			std::vector<InputLayer*> Inputs;
 			OutputLayer* Output = nullptr;
+			std::vector<netData> InputData;
+			netData TrainData;
+			std::vector<int> TrainOrder;
 		public:
 			NeuralNetContainer(OutputLayer* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
@@ -366,7 +377,8 @@ namespace PVX {
 
 			std::vector<std::pair<float*, size_t>> MakeDNA();
 
-			void TrainingSessionSetup(const netData& inp, const netData& outp, size_t BatchSize);
+			void AddTrainData(const netData& inp, const netData& outp);
+			void AddTrainData(const std::vector<netData>& inp, const netData& outp);
 			float Iterate();
 		};
 	}

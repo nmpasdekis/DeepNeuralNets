@@ -54,6 +54,9 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output_SoftMax.cpp">
       <Filter>Depricated</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\PVX_Training.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\PVX_NeuralNets_Util.inl">
