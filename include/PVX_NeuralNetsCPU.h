@@ -342,9 +342,11 @@ namespace PVX {
 			std::vector<NeuralLayer_Base*> Layers;
 			std::vector<InputLayer*> Inputs;
 			OutputLayer* Output = nullptr;
-			std::vector<netData> InputData;
-			netData TrainData;
+			std::vector<netData> AllInputData;
+			netData AllTrainData;
 			std::vector<int> TrainOrder;
+			int curIteration = 0;
+			std::vector<int> tmpOrder{ 1, 0 };
 		public:
 			NeuralNetContainer(OutputLayer* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
@@ -378,8 +380,9 @@ namespace PVX {
 
 			std::vector<std::pair<float*, size_t>> MakeDNA();
 
-			void AddTrainData(const netData& inp, const netData& outp);
-			void AddTrainData(const std::vector<netData>& inp, const netData& outp);
+			void AddTrainDataRaw(const netData& inp, const netData& outp);
+			void AddTrainDataRaw(const std::vector<netData>& inp, const netData& outp);
+			void SetBatchSize(int sz);
 			float Iterate();
 		};
 	}

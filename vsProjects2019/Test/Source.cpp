@@ -8,7 +8,7 @@ using namespace PVX::Solvers;
 
 int main() {
 	{
-		NeuralLayer_Base::L2Regularization(0.01f);
+		//NeuralLayer_Base::L2Regularization(0.01f);
 		InputLayer Input("Input", 2);
 		NeuronLayer Hidden1("Hidden1", &Input, 10);
 		NeuronLayer Hidden2("Hidden2", &Hidden1, 10);
@@ -30,14 +30,23 @@ int main() {
 			0.0f, 1.0f
 		});
 
+		Network.AddTrainDataRaw(InputData, TrainData);
+		Network.SetBatchSize(4);
+
 		float Error = 1.0f;
 		int iter = 0;
 		while (Error>1e-16) {
-			Error = Network.TrainRaw(InputData, TrainData);
+			Error = Network.Iterate();
 			if (!(iter++%1000)) {
-				auto r = Network.ProcessRaw(InputData);
+				//auto r = Network.ProcessRaw(InputData);
 				std::cout << "\r" << log10(Error) << "                              ";
 			}
+
+			//Error = Network.TrainRaw(InputData, TrainData);
+			//if (!(iter++%1000)) {
+			//	auto r = Network.ProcessRaw(InputData);
+			//	std::cout << "\r" << log10(Error) << "                              ";
+			//}
 		}
 
 		std::cout << "\n" << Error << "\n\n" << Network.ProcessRaw(InputData) << "\n\nI know Kung Fu!!!\n\n";
