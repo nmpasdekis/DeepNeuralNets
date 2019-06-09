@@ -58,6 +58,9 @@ namespace PVX::DeepNeuralNets {
 	void NeuralLayer_Base::L2Regularization(float lambda) {
 		__L2 = lambda;
 	}
+	float NeuralLayer_Base::L2Regularization() {
+		return __L2;
+	}
 	float NeuralLayer_Base::Dropout() {
 		return __Dropout;
 	}

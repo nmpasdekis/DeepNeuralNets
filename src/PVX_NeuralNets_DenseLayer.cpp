@@ -244,19 +244,19 @@ namespace PVX {
 			Weights *= randScale;
 			if (_L2>0.0f) {
 				switch (Train) {
-					case TrainScheme::Adam: updateWeights = &NeuronLayer::AdamF; break;
-					case TrainScheme::RMSprop: updateWeights = &NeuronLayer::RMSpropF; break;
-					case TrainScheme::Momentum: updateWeights = &NeuronLayer::MomentumF; break;
-					case TrainScheme::AdaGrad: updateWeights = &NeuronLayer::AdaGradF; break;
-					case TrainScheme::Sgd: updateWeights = &NeuronLayer::SgdF; break;
-				}
-			} else {
-				switch (Train) {
 					case TrainScheme::Adam: updateWeights = &NeuronLayer::Adam_WeightDecayF; break;
 					case TrainScheme::RMSprop: updateWeights = &NeuronLayer::RMSprop_WeightDecayF; break;
 					case TrainScheme::Momentum: updateWeights = &NeuronLayer::Momentum_WeightDecayF; break;
 					case TrainScheme::AdaGrad: updateWeights = &NeuronLayer::AdaGrad_WeightDecayF; break;
 					case TrainScheme::Sgd: updateWeights = &NeuronLayer::Sgd_WeightDecayF; break;
+				}
+			} else {
+				switch (Train) {
+					case TrainScheme::Adam: updateWeights = &NeuronLayer::AdamF; break;
+					case TrainScheme::RMSprop: updateWeights = &NeuronLayer::RMSpropF; break;
+					case TrainScheme::Momentum: updateWeights = &NeuronLayer::MomentumF; break;
+					case TrainScheme::AdaGrad: updateWeights = &NeuronLayer::AdaGradF; break;
+					case TrainScheme::Sgd: updateWeights = &NeuronLayer::SgdF; break;
 				}
 			}
 		}

@@ -75,6 +75,7 @@ namespace PVX {
 			static float RMSprop();
 			static void RMSprop(float Beta);
 			static void L2Regularization(float lambda);
+			static float L2Regularization();
 			static float Dropout();
 			static void Dropout(float Rate);
 			static void UseDropout(int);
