@@ -18,7 +18,6 @@ namespace PVX::DeepNeuralNets {
 		size_t i = 0;
 		for (auto& it: Data)fnc(it, i++);
 	}
-
 	void NeuralNetContainer::AddTrainDataRaw(const std::vector<netData>& inp, const netData& outp) {
 		curIteration = 0;
 		if (!AllInputData.size()) {
@@ -49,6 +48,42 @@ namespace PVX::DeepNeuralNets {
 			std::shuffle(TrainOrder.begin(), TrainOrder.end(), g);
 		}
 	}
+
+	void NeuralNetContainer::AddTrainData(const netData& inp, const netData& outp) {
+		AddTrainData(std::vector<netData>{inp}, outp);
+	}
+	void NeuralNetContainer::AddTrainData(const std::vector<netData>& inp, const netData& outp) {
+		curIteration = 0;
+		if (!AllInputData.size()) {
+			AllInputData.reserve(inp.size());
+			size_t c = 0;
+			for (auto& i : inp)
+				AllInputData.push_back(Inputs[c++]->MakeRawInput(i));
+			AllTrainData = outp;
+		} else {
+			ForEach(inp, [&](auto& item, auto i) {
+				auto& t = AllInputData[i];
+				auto newInput = netData(item.rows() + 1, t.cols() + item.cols());
+				newInput << t, Inputs[i]->MakeRawInput(item);
+				t = newInput;
+			});
+			auto newOut = netData(outp.rows(), outp.cols() + AllTrainData.cols());
+			newOut << AllTrainData, outp;
+			AllTrainData = newOut;
+		}
+
+		auto next = TrainOrder.size();
+		TrainOrder.resize(next + outp.cols());
+		for (; next<TrainOrder.size(); next++)
+			TrainOrder[next] = next;
+
+		{
+			std::random_device rd;
+			std::mt19937 g(rd());
+			std::shuffle(TrainOrder.begin(), TrainOrder.end(), g);
+		}
+	}
+
 	void NeuralNetContainer::SetBatchSize(int sz) {
 		tmpOrder.resize(sz);
 	}

@@ -382,6 +382,9 @@ namespace PVX {
 
 			void AddTrainDataRaw(const netData& inp, const netData& outp);
 			void AddTrainDataRaw(const std::vector<netData>& inp, const netData& outp);
+			void AddTrainData(const netData& inp, const netData& outp);
+			void AddTrainData(const std::vector<netData>& inp, const netData& outp);
+
 			void SetBatchSize(int sz);
 			float Iterate();
 		};
