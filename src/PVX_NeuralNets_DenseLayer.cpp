@@ -170,14 +170,16 @@ namespace PVX {
 			auto ret = new NeuronLayer(cols-1, rows, LayerActivation(act), TrainScheme(train));
 			if (Name.size()) ret->name = Name;
 			ret->GetWeights() = Eigen::Map<netData>(Weights.data(), rows, cols);
-			ret->_Dropout = drop;
-			ret->_iDropout = 1.0f / drop;
-			ret->_Momentum = momentum;
-			ret->_iMomentum = 1.0f - momentum;
-			ret->_LearnRate = rate;
-			ret->_RMSprop = rms;
-			ret->_iRMSprop = 1.0f - rms;
-			ret->_L2 = l2;
+			if (!OverrideOnLoad) {
+				ret->_Dropout = drop;
+				ret->_iDropout = 1.0f / drop;
+				ret->_Momentum = momentum;
+				ret->_iMomentum = 1.0f - momentum;
+				ret->_LearnRate = rate;
+				ret->_RMSprop = rms;
+				ret->_iRMSprop = 1.0f - rms;
+				ret->_L2 = l2;
+			}
 			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(prev);// (NeuralLayer_Base*)prev;
 			return ret;
 		}
@@ -281,6 +283,9 @@ namespace PVX {
 
 		void NeuralLayer_Base::UseDropout(int b) {
 			PVX::DeepNeuralNets::UseDropout = b;
+		}
+		void NeuralLayer_Base::OverrideParamsOnLoad(int b) {
+			OverrideOnLoad = b;
 		}
 		void NeuronLayer::FeedForward(int Version) {
 			if (Version > FeedVersion) {

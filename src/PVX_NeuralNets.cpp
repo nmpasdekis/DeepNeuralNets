@@ -12,6 +12,7 @@ namespace PVX::DeepNeuralNets {
 	float NeuralLayer_Base::__Dropout = 0.8f;
 	float NeuralLayer_Base::__iDropout = 1.0f / 0.8f;
 	float NeuralLayer_Base::__L2 = 0.0f;
+	int NeuralLayer_Base::OverrideOnLoad = 0;
 
 	netData myRandom(int r, int c, float Max) {
 		return Max * netData::Random(r, c);

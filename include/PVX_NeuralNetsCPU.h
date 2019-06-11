@@ -34,6 +34,7 @@ namespace PVX {
 
 			netData output;
 			int FeedVersion = -1;
+			static int OverrideOnLoad;
 			static float
 				__LearnRate,
 				__Momentum,
@@ -79,6 +80,7 @@ namespace PVX {
 			static float Dropout();
 			static void Dropout(float Rate);
 			static void UseDropout(int);
+			static void OverrideParamsOnLoad(int ovrd = 1);
 			
 			virtual void SetLearnRate(float a) = 0;
 			virtual void ResetMomentum() = 0;
