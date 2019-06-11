@@ -142,6 +142,7 @@ namespace PVX {
 				bin.Write("MMNT", _Momentum);
 				bin.Write("RMSP", _RMSprop);
 				bin.Write("DRPT", _Dropout);
+				bin.Write("L2RG", _L2);
 				bin.Write("ACTV", (int)(activation));
 				bin.Write("TRNS", (int)(training));
 				bin.Write("INPT", (int)(IndexOf.at(PreviousLayer)));
@@ -150,7 +151,7 @@ namespace PVX {
 		}
 		NeuralLayer_Base* NeuronLayer::Load2(PVX::BinLoader& bin) {
 			int rows = 0, cols = 0, act = 0, train = 0, prev = 0;
-			float rate, rms, drop, momentum;
+			float rate, rms, drop, momentum, l2;
 			std::string Name;
 			std::vector<float> Weights;
 			bin.Read("ROWS", rows);
@@ -162,6 +163,7 @@ namespace PVX {
 			bin.Read("DRPT", drop);
 			bin.Read("ACTV", act);
 			bin.Read("TRNS", train);
+			bin.Read("L2RG", l2);
 			bin.Read("INPT", prev);
 			bin.Read("NAME", Name);
 			bin.Execute();
@@ -175,6 +177,7 @@ namespace PVX {
 			ret->_LearnRate = rate;
 			ret->_RMSprop = rms;
 			ret->_iRMSprop = 1.0f - rms;
+			ret->_L2 = l2;
 			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(prev);// (NeuralLayer_Base*)prev;
 			return ret;
 		}

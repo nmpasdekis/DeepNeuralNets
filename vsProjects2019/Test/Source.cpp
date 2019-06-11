@@ -37,16 +37,11 @@ int main() {
 		int iter = 0;
 		while (Error>1e-16) {
 			Error = Network.Iterate();
+			//Error = Network.TrainRaw(InputData, TrainData);
 			if (!(iter++%1000)) {
 				//auto r = Network.ProcessRaw(InputData);
 				std::cout << "\r" << log10(Error) << "                              ";
 			}
-
-			//Error = Network.TrainRaw(InputData, TrainData);
-			//if (!(iter++%1000)) {
-			//	auto r = Network.ProcessRaw(InputData);
-			//	std::cout << "\r" << log10(Error) << "                              ";
-			//}
 		}
 
 		std::cout << "\n" << Error << "\n\n" << Network.ProcessRaw(InputData) << "\n\nI know Kung Fu!!!\n\n";
