@@ -100,7 +100,7 @@ namespace PVX {
 			PreviousLayer->BackPropagate(outPart(grad));
 		}
 
-		void ActivationLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
+		void ActivationLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("ACTV");
 			{
 				bin.Write("OUTC", nOutput());
@@ -130,7 +130,7 @@ namespace PVX {
 		void ActivationLayer::ResetMomentum() {
 			PreviousLayer->ResetMomentum();
 		}
-		size_t ActivationLayer::nInput() {
+		size_t ActivationLayer::nInput() const {
 			return nOutput();
 		}
 	}

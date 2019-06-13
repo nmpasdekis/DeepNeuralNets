@@ -4,7 +4,7 @@
 
 namespace PVX {
 	namespace DeepNeuralNets {
-		void NeuronAdder::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
+		void NeuronAdder::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("ADDR");
 			{
 				for (auto& i: InputLayers)
@@ -37,7 +37,7 @@ namespace PVX {
 		void NeuronAdder::BackPropagate(const netData & Gradient) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient);
 		}
-		size_t NeuronAdder::nInput() {
+		size_t NeuronAdder::nInput() const {
 			return output.rows() - 1;
 		}
 
@@ -61,7 +61,7 @@ namespace PVX {
 				i->ResetMomentum();
 		}
 
-		void NeuronMultiplier::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
+		void NeuronMultiplier::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("MULP");
 			{
 				for (auto& i: InputLayers)
@@ -110,7 +110,7 @@ namespace PVX {
 				InputLayers[j]->BackPropagate(Gradient.array() * tmp);
 			}
 		}
-		size_t NeuronMultiplier::nInput() {
+		size_t NeuronMultiplier::nInput() const {
 			return output.cols();
 		}
 

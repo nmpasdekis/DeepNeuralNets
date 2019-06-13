@@ -3,7 +3,7 @@
 
 namespace PVX {
 	namespace DeepNeuralNets {
-		void InputLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
+		void InputLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("INPT"); {
 				if (name.size()) bin.Write("NAME", name);
 				bin.Write("ICNT", int(nInput()));
@@ -61,7 +61,7 @@ namespace PVX {
 			return MakeRawInput(Eigen::Map<netData>((float*)Data, output.rows() - 1, Count));
 		}
 
-		size_t InputLayer::nInput() {
+		size_t InputLayer::nInput() const {
 			return output.rows() - 1;
 		}
 	}

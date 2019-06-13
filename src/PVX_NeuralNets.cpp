@@ -18,18 +18,6 @@ namespace PVX::DeepNeuralNets {
 		return Max * netData::Random(r, c);
 	}
 
-	//int Check(netData mat) {
-	//	float* dt = mat.data();
-	//	size_t sz = mat.cols() * mat.rows();
-	//	for (auto i = 0; i < sz; i++) {
-	//		if (dt[i] == dt[i] + 1.0f) {
-	//			exit(-1);
-	//			return 0;
-	//		}
-	//	}
-	//	return 1;
-	//}
-
 	netData NeuralLayer_Base::Output() {
 		return output;
 	}
@@ -69,11 +57,11 @@ namespace PVX::DeepNeuralNets {
 		__Dropout = Beta;
 		__iDropout = 1.0f / Beta;
 	}
-	int NeuralLayer_Base::nOutput() {
+	int NeuralLayer_Base::nOutput() const {
 		return output.rows() - 1;
 	}
 
-	int NeuralLayer_Base::BatchSize() {
+	int NeuralLayer_Base::BatchSize() const {
 		return output.cols();
 	}
 
@@ -97,51 +85,6 @@ namespace PVX::DeepNeuralNets {
 		InputLayers = inp;
 	}
 
-	std::set<NeuralLayer_Base*> NeuralNetOutput_Base::Gather() {
-		std::set<NeuralLayer_Base*> g;
-		LastLayer->Gather(g);
-		return g;
-	}
-
-	void NeuralNetOutput_Base::FeedForward() {
-		LastLayer->FeedForward(++Version);
-		auto tmp = LastLayer->Output();
-		output = outPart(tmp);
-	}
-
-	NeuralNetOutput_Base::NeuralNetOutput_Base(NeuralLayer_Base* Last) : LastLayer{ Last }, output{ 1, Last->Output().cols() } { }
-	void NeuralNetOutput_Base::Result(float* res) {
-		auto r = Result();
-		memcpy(res, r.data(), sizeof(float) * r.cols());
-	}
-
-	const netData& NeuralNetOutput_Base::Result() {
-		FeedForward();
-		return output;
-	}
-
-	int NeuralNetOutput_Base::nOutput() {
-		return LastLayer->output.rows() - 1;
-	}
-
-	void NeuralNetOutput_Base::SaveCheckpoint() {
-		if (Checkpoint.Layers.size()==0) {
-			Checkpoint = GetDNA();
-		}
-		CheckpointDNA = Checkpoint.GetData();
-		CheckpointError = Error;
-	}
-
-	float NeuralNetOutput_Base::LoadCheckpoint() {
-		Error = CheckpointError;
-		Checkpoint.SetData(CheckpointDNA.data());
-		return Error;
-	}
-
-	void NeuralNetOutput_Base::ResetMomentum() {
-		LastLayer->ResetMomentum();
-	}
-
 	void NeuronLayer::DNA(std::map<void*, WeightData>& w) {
 		if (!w.count(this)) {
 			WeightData ret;
@@ -150,19 +93,6 @@ namespace PVX::DeepNeuralNets {
 			w[this] = ret;
 		}
 		PreviousLayer->DNA(w);
-	}
-
-	NetDNA NeuralNetOutput_Base::GetDNA() {
-		std::map<void*, WeightData> data;
-		LastLayer->DNA(data);
-		NetDNA ret;
-		ret.Size = 0;
-		for (auto& [l, dt] : data) {
-			dt.Offset = ret.Size;
-			ret.Size += dt.Count;
-			ret.Layers.push_back(dt);
-		}
-		return ret;
 	}
 
 	std::vector<float> NetDNA::GetData() {
@@ -176,12 +106,4 @@ namespace PVX::DeepNeuralNets {
 		for (auto& w : Layers)
 			memcpy(w.Weights, &Data[w.Offset], sizeof(float) * w.Count);
 	}
-
-	//void NeuralNetOutput_Base::Save(const wchar_t* Filename) {
-
-	//}
-	//void NeuralNetOutput_Base::Load(const wchar_t* Filename) {
-
-	//}
-
 }

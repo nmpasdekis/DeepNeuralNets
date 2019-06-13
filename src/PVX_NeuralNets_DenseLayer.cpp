@@ -131,7 +131,7 @@ namespace PVX {
 
 		////////////////////////////////////
 
-		void NeuronLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
+		void NeuronLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("DENS");
 			{
 				if (name.size()) bin.Write("NAME", name);
@@ -313,7 +313,7 @@ namespace PVX {
 			(this->*updateWeights)(grad);
 		}
 
-		size_t NeuronLayer::nInput() {
+		size_t NeuronLayer::nInput() const {
 			return Weights.cols();
 		}
 

@@ -24,12 +24,9 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_Activation.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Combiner.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Container.cpp" />
-    <ClCompile Include="..\..\src\PVX_NeuralNets_Container_Old.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_DenseLayer.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Input.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output.cpp" />
-    <ClCompile Include="..\..\src\PVX_NeuralNets_Output_MeanSquare.cpp" />
-    <ClCompile Include="..\..\src\PVX_NeuralNets_Output_SoftMax.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_UtilityLayers.cpp" />
     <ClCompile Include="..\..\src\PVX_Training.cpp" />
   </ItemGroup>
@@ -39,7 +36,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\PVX_BinSaver.h" />
     <ClInclude Include="..\..\include\PVX_NeuralNetsCPU.h" />
-    <ClInclude Include="..\..\include\PVX_NeuralNetsCPU_Depricated.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

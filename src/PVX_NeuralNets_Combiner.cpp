@@ -9,7 +9,7 @@ namespace PVX {
 			return netData::Zero(count + 1, 1);
 		}
 
-		void NeuronCombiner::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
+		void NeuronCombiner::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("CMBN");
 			{
 				for (auto& i: InputLayers)
@@ -60,7 +60,7 @@ namespace PVX {
 			}
 		}
 
-		size_t NeuronCombiner::nInput() {
+		size_t NeuronCombiner::nInput() const {
 			return output.rows() - 1;
 		}
 	}
