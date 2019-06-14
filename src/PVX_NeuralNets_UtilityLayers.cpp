@@ -7,16 +7,31 @@ namespace PVX {
 		void NeuronAdder::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("ADDR");
 			{
-				for (auto& i: InputLayers)
-					bin.write(int(IndexOf.at(i)));
+				bin.Write("INPC", int(nInput()));
+				bin.Begin("LYRS"); {
+					for (auto& i: InputLayers)
+						bin.write(int(IndexOf.at(i)));
+				} bin.End();
 			}
 			bin.End();
+		}
+		NeuronAdder* NeuronAdder::Load2(PVX::BinLoader& bin) {
+			int inp;
+			std::vector<int> layers;
+			bin.Read("INPC", inp);
+			bin.Read("LYRS", layers);
+			bin.Execute();
+			auto add = new NeuronAdder(inp);
+			for (auto l : layers) {
+				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(l));
+			}
+			return add;
 		}
 		NeuronAdder::NeuronAdder(const int InputSize) {
 			output = netData::Zero(InputSize + 1, 1);
 		}
 		NeuronAdder::NeuronAdder(const std::vector<NeuralLayer_Base*>& Inputs) : NeuronAdder(Inputs[0]->nOutput()) {
-			for (auto i : Inputs) Input(i);
+			InputLayers = Inputs;
 		}
 		void NeuronAdder::DNA(std::map<void*, WeightData>& Weights) {
 			for (auto l : InputLayers)

@@ -202,6 +202,7 @@ namespace PVX {
 		protected:
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
+			static NeuronAdder* Load2(PVX::BinLoader& bin);
 		public:
 			NeuronAdder(const int InputSize);
 			NeuronAdder(const std::vector<NeuralLayer_Base*> & Inputs);

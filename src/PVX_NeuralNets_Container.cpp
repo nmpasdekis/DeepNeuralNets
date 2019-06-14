@@ -30,6 +30,9 @@ namespace PVX::DeepNeuralNets {
 			bin2.Process("DENS", [&](PVX::BinLoader& bin3) {
 				this->Layers.push_back(NeuronLayer::Load2(bin3));
 			});
+			bin2.Process("ADDR", [&](PVX::BinLoader& bin3) {
+				this->Layers.push_back(NeuronAdder::Load2(bin3));
+			});
 		});
 		bin.Process("OUTP", [&](PVX::BinLoader& bin2) {
 			int tp, last;
