@@ -5,19 +5,28 @@ namespace PVX {
 	namespace DeepNeuralNets {
 		void InputLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("INPT"); {
+				bin.Write("NDID", int(Id));
 				if (name.size()) bin.Write("NAME", name);
 				bin.Write("ICNT", int(nInput()));
 			} bin.End();
 		}
 		InputLayer::InputLayer(PVX::BinLoader& bin){
 			int ic;
+			bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
 			bin.Read("NAME", name);
 			bin.Read("ICNT", ic);
 			bin.Execute();
 			output = netData::Ones(ic + 1ll, 1ll);
 		}
+		NeuralLayer_Base* InputLayer::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
+			auto ret = new InputLayer(nOutput());
+			for (auto l : InputLayers)
+				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			return ret;
+		}
 		InputLayer::InputLayer(const size_t Size) {
 			output = netData::Ones(Size + 1, 1);
+			Id = ++NextId;
 		}
 		InputLayer::InputLayer(const std::string& Name, const size_t Size) {
 			name = Name;

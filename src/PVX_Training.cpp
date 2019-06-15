@@ -117,4 +117,7 @@ namespace PVX::DeepNeuralNets {
 			return Output->Train(AllTrainData);
 		}
 	}
+	void NeuralNetContainer::CopyWeightsFrom(const NeuralNetContainer& from) {
+
+	}
 }

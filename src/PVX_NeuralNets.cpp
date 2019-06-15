@@ -13,6 +13,7 @@ namespace PVX::DeepNeuralNets {
 	float NeuralLayer_Base::__iDropout = 1.0f / 0.8f;
 	float NeuralLayer_Base::__L2 = 0.0f;
 	int NeuralLayer_Base::OverrideOnLoad = 0;
+	size_t NeuralLayer_Base::NextId = 0;
 
 	netData myRandom(int r, int c, float Max) {
 		return Max * netData::Random(r, c);
@@ -57,11 +58,11 @@ namespace PVX::DeepNeuralNets {
 		__Dropout = Beta;
 		__iDropout = 1.0f / Beta;
 	}
-	int NeuralLayer_Base::nOutput() const {
+	size_t NeuralLayer_Base::nOutput() const {
 		return output.rows() - 1;
 	}
 
-	int NeuralLayer_Base::BatchSize() const {
+	size_t NeuralLayer_Base::BatchSize() const {
 		return output.cols();
 	}
 

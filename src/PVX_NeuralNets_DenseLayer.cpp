@@ -134,6 +134,7 @@ namespace PVX {
 		void NeuronLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("DENS");
 			{
+				bin.Write("NDID", int(Id));
 				if (name.size()) bin.Write("NAME", name);
 				bin.Write("ROWS", int(Weights.rows()));
 				bin.Write("COLS", int(Weights.cols()));
@@ -153,6 +154,7 @@ namespace PVX {
 			int rows = 0, cols = 0, act = 0, train = 0, prev = 0;
 			float rate, rms, drop, momentum, l2;
 			std::string Name;
+			int Id = -1;
 			std::vector<float> Weights;
 			bin.Read("ROWS", rows);
 			bin.Read("COLS", cols);
@@ -166,8 +168,10 @@ namespace PVX {
 			bin.Read("L2RG", l2);
 			bin.Read("INPT", prev);
 			bin.Read("NAME", Name);
+			bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
 			bin.Execute();
 			auto ret = new NeuronLayer(cols-1, rows, LayerActivation(act), TrainScheme(train));
+			if(Id >= 0) ret->Id = Id;
 			if (Name.size()) ret->name = Name;
 			ret->GetWeights() = Eigen::Map<netData>(Weights.data(), rows, cols);
 			if (!OverrideOnLoad) {
@@ -181,6 +185,22 @@ namespace PVX {
 				ret->_L2 = l2;
 			}
 			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(prev);// (NeuralLayer_Base*)prev;
+			return ret;
+		}
+		NeuralLayer_Base* NeuronLayer::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
+			auto ret = new NeuronLayer(nInput(), nOutput(), activation, training);
+
+			ret->Weights = Weights;
+			ret->_LearnRate = _LearnRate;
+			ret->_Momentum = _Momentum;
+			ret->_iMomentum = _iMomentum;
+			ret->_RMSprop = _RMSprop;
+			ret->_iRMSprop = _iRMSprop;
+			ret->_Dropout = _Dropout;
+			ret->_iDropout = _iDropout;
+			ret->_L2 = _L2;
+			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(PreviousLayer));
+
 			return ret;
 		}
 		void NeuronLayer::SetLearnRate(float a) {
@@ -197,7 +217,7 @@ namespace PVX {
 		}
 		static int InitOpenMP = 0;
 
-		NeuronLayer::NeuronLayer(int nInput, int nOutput, LayerActivation Activation, TrainScheme Train, float WeightMax) :
+		NeuronLayer::NeuronLayer(int nInput, int nOutput, LayerActivation Activation, TrainScheme Train) :
 			training{ Train },
 			activation{ Activation },
 			DeltaWeights{ netData::Zero(nOutput, nInput + 1ll) },
@@ -208,6 +228,7 @@ namespace PVX {
 				Eigen::initParallel();
 				InitOpenMP = 1;
 			}
+			Id = ++NextId;
 
 			_LearnRate = __LearnRate;
 			_Momentum = __Momentum;
@@ -266,18 +287,18 @@ namespace PVX {
 			}
 		}
 
-		NeuronLayer::NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate, TrainScheme Train, float WeightMax):
-			NeuronLayer(nInput, nOutput, Activate, Train, WeightMax) {
+		NeuronLayer::NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate, TrainScheme Train):
+			NeuronLayer(nInput, nOutput, Activate, Train) {
 			name = Name;
 		}
 
-		NeuronLayer::NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate, TrainScheme Train, float WeightMax) :
-			NeuronLayer(inp->nOutput(), nOutput, Activate, Train, WeightMax) {
+		NeuronLayer::NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate, TrainScheme Train) :
+			NeuronLayer(inp->nOutput(), nOutput, Activate, Train) {
 			PreviousLayer = inp;
 		}
 
-		NeuronLayer::NeuronLayer(const std::string& Name, NeuralLayer_Base* inp, int nOutput, LayerActivation Activate, TrainScheme Train, float WeightMax):
-			NeuronLayer(inp, nOutput, Activate, Train, WeightMax) {
+		NeuronLayer::NeuronLayer(const std::string& Name, NeuralLayer_Base* inp, int nOutput, LayerActivation Activate, TrainScheme Train):
+			NeuronLayer(inp, nOutput, Activate, Train) {
 			name = Name;
 		}
 

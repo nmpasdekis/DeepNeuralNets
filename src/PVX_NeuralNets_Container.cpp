@@ -39,7 +39,7 @@ namespace PVX::DeepNeuralNets {
 			bin2.Read("TYPE", tp);
 			bin2.Read("LAST", last);
 			bin2.Execute();
-			Output = new OutputLayer(Layers.at(last-1), OutputType(tp));
+			Output = new OutputLayer(Layers.at(size_t(last)-1), OutputType(tp));
 		});
 		bin.Execute();
 		for (auto l:Layers) {
@@ -47,6 +47,15 @@ namespace PVX::DeepNeuralNets {
 			auto in = dynamic_cast<InputLayer*>(l);
 			if (in)Inputs.push_back(in);
 		}
+	}
+	NeuralNetContainer::NeuralNetContainer(const NeuralNetContainer& net) {
+		auto layers = net.Output->Gather();
+		std::map<NeuralLayer_Base*, size_t> IndexOf;
+		size_t i = 1;
+		for (auto l : layers) IndexOf[l] = i++;
+		for (auto l : layers) Layers.push_back(l->newCopy(IndexOf));
+		for (auto l : Layers) l->FixInputs(Layers);
+		Output = new OutputLayer(Layers[IndexOf.at(net.Output->LastLayer)], net.Output->Type);
 	}
 	NeuralNetContainer::~NeuralNetContainer() {
 		if (Layers.size()) {

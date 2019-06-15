@@ -59,6 +59,7 @@ namespace PVX {
 		}
 		ActivationLayer::ActivationLayer(int inp, LayerActivation Activation) : activation{ Activation } {
 			PreviousLayer = nullptr;
+			Id = ++NextId;
 			output = netData::Ones(inp + 1ll, 1);
 			switch (Activation) {
 				case LayerActivation::Tanh:
@@ -103,6 +104,7 @@ namespace PVX {
 		void ActivationLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("ACTV");
 			{
+				bin.Write("NDID", int(Id));
 				bin.Write("OUTC", nOutput());
 				bin.Write("ACTV", int(activation));
 				bin.Write("INPT", IndexOf.at(PreviousLayer));
@@ -111,13 +113,21 @@ namespace PVX {
 		}
 
 		ActivationLayer* ActivationLayer::Load2(PVX::BinLoader& bin) {
-			int outc, act, prev;
+			int outc, act, prev, Id = -1;
 			bin.Read("OUTC", outc);
 			bin.Read("ACTV", act);
 			bin.Read("INPT", prev);
+			bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
 			bin.Execute();
 			auto ret = new ActivationLayer(outc, LayerActivation(act));
+			if (Id>=0)ret->Id = Id;
 			*(int*)&ret->PreviousLayer = prev;
+			return ret;
+		}
+
+		NeuralLayer_Base* ActivationLayer::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
+			auto ret = new ActivationLayer(nInput(), activation);
+			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(PreviousLayer));
 			return ret;
 		}
 

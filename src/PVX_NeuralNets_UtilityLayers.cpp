@@ -7,6 +7,7 @@ namespace PVX {
 		void NeuronAdder::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("ADDR");
 			{
+				bin.Write("NDID", int(Id));
 				bin.Write("INPC", int(nInput()));
 				bin.Begin("LYRS"); {
 					for (auto& i: InputLayers)
@@ -16,19 +17,28 @@ namespace PVX {
 			bin.End();
 		}
 		NeuronAdder* NeuronAdder::Load2(PVX::BinLoader& bin) {
-			int inp;
+			int inp, Id = -1;
 			std::vector<int> layers;
 			bin.Read("INPC", inp);
 			bin.Read("LYRS", layers);
+			bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
 			bin.Execute();
 			auto add = new NeuronAdder(inp);
+			if (Id>=0)add->Id = Id;
 			for (auto l : layers) {
 				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(l));
 			}
 			return add;
 		}
-		NeuronAdder::NeuronAdder(const int InputSize) {
+		NeuralLayer_Base* NeuronAdder::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
+			auto ret =  new NeuronAdder(nInput());
+			for (auto l : InputLayers)
+				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			return ret;
+		}
+		NeuronAdder::NeuronAdder(const size_t InputSize) {
 			output = netData::Zero(InputSize + 1, 1);
+			Id = ++NextId;
 		}
 		NeuronAdder::NeuronAdder(const std::vector<NeuralLayer_Base*>& Inputs) : NeuronAdder(Inputs[0]->nOutput()) {
 			InputLayers = Inputs;
@@ -79,14 +89,42 @@ namespace PVX {
 		void NeuronMultiplier::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("MULP");
 			{
-				for (auto& i: InputLayers)
-					bin.write(int(IndexOf.at(i)));
+				bin.Write("NDID", int(Id));
+				bin.Write("INPC", int(nInput()));
+				bin.Begin("LYRS");
+				{
+					for (auto& i: InputLayers)
+						bin.write(int(IndexOf.at(i)));
+				} bin.End();
 			}
 			bin.End();
 		}
 
-		NeuronMultiplier::NeuronMultiplier(const int inputs) {
+		NeuronMultiplier* NeuronMultiplier::Load2(PVX::BinLoader& bin) {
+			int inp, Id = -1;
+			std::vector<int> layers;
+			bin.Read("INPC", inp);
+			bin.Read("LYRS", layers);
+			bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
+			bin.Execute();
+			auto add = new NeuronMultiplier(inp);
+			if (Id>=0)add->Id = Id;
+			for (auto l : layers) {
+				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(l));
+			}
+			return add;
+		}
+
+		NeuralLayer_Base* NeuronMultiplier::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
+			auto ret = new NeuronMultiplier(nInput());
+			for (auto l : InputLayers)
+				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			return ret;
+		}
+
+		NeuronMultiplier::NeuronMultiplier(const size_t inputs) {
 			output = netData::Zero(inputs + 1, 1);
+			Id = ++NextId;
 		}
 
 		NeuronMultiplier::NeuronMultiplier(const std::vector<NeuralLayer_Base*> & inputs) {

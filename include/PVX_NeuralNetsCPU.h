@@ -35,6 +35,7 @@ namespace PVX {
 			netData output;
 			int FeedVersion = -1;
 			static int OverrideOnLoad;
+			static size_t NextId;
 			static float
 				__LearnRate,
 				__Momentum,
@@ -55,6 +56,8 @@ namespace PVX {
 
 			void FixInputs(const std::vector<NeuralLayer_Base*>& ids);
 			std::string name;
+			size_t Id;
+			virtual NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) = 0;
 		public:
 			const std::string& Name() const { return name; };
 			virtual void DNA(std::map<void*, WeightData> & Weights) = 0;
@@ -64,8 +67,8 @@ namespace PVX {
 			virtual void BackPropagate(const netData &) = 0;
 			virtual size_t nInput() const = 0;
 
-			int nOutput() const;
-			int BatchSize() const;
+			size_t nOutput() const;
+			size_t BatchSize() const;
 			netData Output();
 			netData RealOutput();
 
@@ -96,6 +99,7 @@ namespace PVX {
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			InputLayer(PVX::BinLoader& bin);
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
 			void DNA(std::map<void*, WeightData> & Weights) {};
 			InputLayer(const size_t Size);
@@ -149,6 +153,7 @@ namespace PVX {
 
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			static NeuralLayer_Base* Load2(PVX::BinLoader& bin);
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 							
 			float
 				_LearnRate,
@@ -160,10 +165,10 @@ namespace PVX {
 				_iDropout,
 				_L2;
 		public:
-			NeuronLayer(int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
-			NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
-			NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
-			NeuronLayer(const std::string& Name, NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam, float WeightMax = 1.0f);
+			NeuronLayer(int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(const std::string& Name, NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
 			size_t nInput() const;
 
 			void FeedForward(int Version);
@@ -185,6 +190,7 @@ namespace PVX {
 
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			static ActivationLayer* Load2(PVX::BinLoader & bin);
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
 			ActivationLayer(NeuralLayer_Base* inp, LayerActivation Activation = LayerActivation::ReLU);
 			ActivationLayer(int inp, LayerActivation Activation = LayerActivation::ReLU);
@@ -203,8 +209,9 @@ namespace PVX {
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			static NeuronAdder* Load2(PVX::BinLoader& bin);
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
-			NeuronAdder(const int InputSize);
+			NeuronAdder(const size_t InputSize);
 			NeuronAdder(const std::vector<NeuralLayer_Base*> & Inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
@@ -219,8 +226,10 @@ namespace PVX {
 		protected:
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
+			static NeuronMultiplier* Load2(PVX::BinLoader& bin);
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
-			NeuronMultiplier(const int inputs);
+			NeuronMultiplier(const size_t inputs);
 			NeuronMultiplier(const std::vector<NeuralLayer_Base*> & inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
@@ -235,8 +244,10 @@ namespace PVX {
 		protected:
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
+			static NeuronCombiner* Load2(PVX::BinLoader& bin);
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
-			NeuronCombiner(const int inputs);
+			NeuronCombiner(const size_t inputs);
 			NeuronCombiner(const std::vector<NeuralLayer_Base*> & inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
@@ -275,7 +286,6 @@ namespace PVX {
 
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 
-			friend class NeuralNetContainer_Old;
 			friend class NeuralNetContainer;
 			OutputType Type;
 
@@ -320,6 +330,7 @@ namespace PVX {
 		public:
 			NeuralNetContainer(OutputLayer* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
+			NeuralNetContainer(const NeuralNetContainer& net);
 			~NeuralNetContainer();
 			void Save(const std::wstring& Filename);
 			void SaveCheckpoint();
@@ -357,6 +368,7 @@ namespace PVX {
 
 			void SetBatchSize(int sz);
 			float Iterate();
+			void CopyWeightsFrom(const NeuralNetContainer& from);
 		};
 	}
 }
