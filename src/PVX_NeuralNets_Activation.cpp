@@ -101,6 +101,10 @@ namespace PVX {
 			PreviousLayer->BackPropagate(outPart(grad));
 		}
 
+		void ActivationLayer::UpdateWeights() {
+			PreviousLayer->UpdateWeights();
+		}
+
 		void ActivationLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("ACTV");
 			{
@@ -128,6 +132,7 @@ namespace PVX {
 		NeuralLayer_Base* ActivationLayer::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
 			auto ret = new ActivationLayer(nInput(), activation);
 			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(PreviousLayer));
+			ret->Id = Id;
 			return ret;
 		}
 

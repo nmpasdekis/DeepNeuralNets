@@ -20,8 +20,7 @@ namespace PVX {
 		}
 		NeuralLayer_Base* InputLayer::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
 			auto ret = new InputLayer(nOutput());
-			for (auto l : InputLayers)
-				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			ret->Id = Id;
 			return ret;
 		}
 		InputLayer::InputLayer(const size_t Size) {

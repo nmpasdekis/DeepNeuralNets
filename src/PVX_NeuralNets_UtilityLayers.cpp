@@ -34,6 +34,7 @@ namespace PVX {
 			auto ret =  new NeuronAdder(nInput());
 			for (auto l : InputLayers)
 				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			ret->Id = Id;
 			return ret;
 		}
 		NeuronAdder::NeuronAdder(const size_t InputSize) {
@@ -61,6 +62,9 @@ namespace PVX {
 		}
 		void NeuronAdder::BackPropagate(const netData & Gradient) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient);
+		}
+		void NeuronAdder::UpdateWeights() {
+			for (auto i: InputLayers) i->UpdateWeights();
 		}
 		size_t NeuronAdder::nInput() const {
 			return output.rows() - 1;
@@ -119,6 +123,7 @@ namespace PVX {
 			auto ret = new NeuronMultiplier(nInput());
 			for (auto l : InputLayers)
 				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			ret->Id = Id;
 			return ret;
 		}
 
@@ -162,6 +167,9 @@ namespace PVX {
 						tmp *= InputLayers[i]->RealOutput().array();
 				InputLayers[j]->BackPropagate(Gradient.array() * tmp);
 			}
+		}
+		void NeuronMultiplier::UpdateWeights() {
+			for (auto i: InputLayers) i->UpdateWeights();
 		}
 		size_t NeuronMultiplier::nInput() const {
 			return output.cols();

@@ -16,7 +16,16 @@ namespace PVX::DeepNeuralNets {
 		for (auto l : all) {
 			auto Inp = dynamic_cast<InputLayer*>(l);
 			if (Inp) Inputs.push_back(Inp);
+			else {
+				auto dense = dynamic_cast<NeuronLayer*>(l);
+				if (dense) {
+					DenseLayers.push_back(dense);
+				}
+			}
 		}
+		std::sort(DenseLayers.begin(), DenseLayers.end(), [](NeuronLayer* a, NeuronLayer* b) {
+			return a->Id<b->Id;
+		});
 	}
 	NeuralNetContainer::NeuralNetContainer(const std::wstring& Filename) {
 		PVX::BinLoader bin(Filename.c_str(), "NWRK");
@@ -47,6 +56,9 @@ namespace PVX::DeepNeuralNets {
 			auto in = dynamic_cast<InputLayer*>(l);
 			if (in)Inputs.push_back(in);
 		}
+		std::sort(DenseLayers.begin(), DenseLayers.end(), [](NeuronLayer* a, NeuronLayer* b) {
+			return a->Id<b->Id;
+		});
 	}
 	NeuralNetContainer::NeuralNetContainer(const NeuralNetContainer& net) {
 		auto layers = net.Output->Gather();
@@ -54,8 +66,21 @@ namespace PVX::DeepNeuralNets {
 		size_t i = 1;
 		for (auto l : layers) IndexOf[l] = i++;
 		for (auto l : layers) Layers.push_back(l->newCopy(IndexOf));
-		for (auto l : Layers) l->FixInputs(Layers);
-		Output = new OutputLayer(Layers[IndexOf.at(net.Output->LastLayer)], net.Output->Type);
+		for (auto l : Layers) {
+			l->FixInputs(Layers);
+			auto in = dynamic_cast<InputLayer*>(l);
+			if (in)Inputs.push_back(in);
+			else {
+				auto dense = dynamic_cast<NeuronLayer*>(l);
+				if (dense) {
+					DenseLayers.push_back(dense);
+				}
+			}
+		}
+		std::sort(DenseLayers.begin(), DenseLayers.end(), [](NeuronLayer* a, NeuronLayer* b) {
+			return a->Id<b->Id;
+		});
+		Output = new OutputLayer(Layers[IndexOf.at(net.Output->LastLayer)-1], net.Output->Type);
 	}
 	NeuralNetContainer::~NeuralNetContainer() {
 		if (Layers.size()) {
@@ -84,13 +109,13 @@ namespace PVX::DeepNeuralNets {
 		bin.Begin("OUTP");
 		{
 			Output->Save(bin, g);
-		} 
+		}
 		bin.End();
 	}
 	void NeuralNetContainer::SaveCheckpoint() {
 		Output->SaveCheckpoint();
 	}
-	float NeuralNetContainer::LoadCheckpoint() { 
+	float NeuralNetContainer::LoadCheckpoint() {
 		return Output->LoadCheckpoint();
 	}
 	void NeuralNetContainer::ResetMomentum() {
@@ -124,20 +149,20 @@ namespace PVX::DeepNeuralNets {
 		return ret;
 	}
 
-	netData NeuralNetContainer::Process(const netData& inp) {
+	netData NeuralNetContainer::Process(const netData& inp) const {
 		Inputs[0]->Input(inp);
 		return Output->Result();
 	}
-	netData NeuralNetContainer::Process(const std::vector<netData>& inp) {
+	netData NeuralNetContainer::Process(const std::vector<netData>& inp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		return Output->Result();
 	}
-	netData NeuralNetContainer::ProcessRaw(const netData& inp) {
+	netData NeuralNetContainer::ProcessRaw(const netData& inp) const {
 		Inputs[0]->InputRaw(inp);
 		return Output->Result();
 	}
-	netData NeuralNetContainer::ProcessRaw(const std::vector<netData>& inp) {
+	netData NeuralNetContainer::ProcessRaw(const std::vector<netData>& inp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		return Output->Result();
@@ -165,23 +190,23 @@ namespace PVX::DeepNeuralNets {
 		return Output->Train(outp);
 	}
 
-	float NeuralNetContainer::Error(const netData& inp, const netData& outp) {
+	float NeuralNetContainer::Error(const netData& inp, const netData& outp) const {
 		Inputs[0]->Input(inp);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer::ErrorRaw(const netData& inp, const netData& outp) {
+	float NeuralNetContainer::ErrorRaw(const netData& inp, const netData& outp) const {
 		Inputs[0]->InputRaw(inp);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer::Error(const std::vector<netData>& inp, const netData& outp) {
+	float NeuralNetContainer::Error(const std::vector<netData>& inp, const netData& outp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
 		Output->FeedForward();
 		return Output->GetError(outp);
 	}
-	float NeuralNetContainer::ErrorRaw(const std::vector<netData>& inp, const netData& outp) {
+	float NeuralNetContainer::ErrorRaw(const std::vector<netData>& inp, const netData& outp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
 		Output->FeedForward();

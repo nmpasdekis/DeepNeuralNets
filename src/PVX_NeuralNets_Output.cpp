@@ -39,6 +39,7 @@ namespace PVX {
 			Eigen::Map<Eigen::RowVectorXf> vec(dif.data(), dif.size());
 			Error = (0.5f * (vec * vec.transpose())(0)) / dif.cols();
 			LastLayer->BackPropagate(dif);
+			LastLayer->UpdateWeights();
 			return Error;
 		}
 		float OutputLayer::GetError_MeanSquare(const netData & Data) {
@@ -50,6 +51,7 @@ namespace PVX {
 		float OutputLayer::Train_SoftMax(const netData & TrainData) {
 			float Error = -(TrainData.array()* Eigen::log(output.array())).sum() / output.cols();
 			LastLayer->BackPropagate(TrainData - output);
+			LastLayer->UpdateWeights();
 			return Error;
 		}
 		float OutputLayer::GetError_SoftMax(const netData& Data) {

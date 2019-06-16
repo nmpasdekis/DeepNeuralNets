@@ -66,6 +66,7 @@ namespace PVX {
 			virtual void FeedForward(int) = 0;
 			virtual void BackPropagate(const netData &) = 0;
 			virtual size_t nInput() const = 0;
+			virtual void UpdateWeights() = 0;
 
 			size_t nOutput() const;
 			size_t BatchSize() const;
@@ -108,6 +109,7 @@ namespace PVX {
 			int Input(const netData & Data);
 			void FeedForward(int) {}
 			void BackPropagate(const netData & Gradient) {}
+			void UpdateWeights() {};
 			size_t nInput() const;
 
 			void InputRaw(const netData & Data);
@@ -132,6 +134,7 @@ namespace PVX {
 			netData Weights;
 			netData DeltaWeights;
 			netData RMSprop;
+			netData curGradient;
 			netData(*Activate)(const netData & Gradient);
 			netData(*Derivative)(const netData & Gradient);
 
@@ -173,6 +176,7 @@ namespace PVX {
 
 			void FeedForward(int Version);
 			void BackPropagate(const netData & TrainData);
+			void UpdateWeights();
 
 			void DNA(std::map<void*, WeightData> & Weights);
 			void SetLearnRate(float a);
@@ -197,6 +201,7 @@ namespace PVX {
 			
 			void FeedForward(int Version);
 			void BackPropagate(const netData& TrainData);
+			void UpdateWeights();
 			void DNA(std::map<void*, WeightData>& Weights);
 			void SetLearnRate(float a);
 			void ResetMomentum();
@@ -216,6 +221,7 @@ namespace PVX {
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void BackPropagate(const netData & Gradient);
+			void UpdateWeights();
 			size_t nInput() const;
 
 			void SetLearnRate(float a);
@@ -234,6 +240,7 @@ namespace PVX {
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void BackPropagate(const netData & Gradient);
+			void UpdateWeights();
 			size_t nInput() const;
 
 			void SetLearnRate(float a);
@@ -252,6 +259,7 @@ namespace PVX {
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void BackPropagate(const netData & Gradient);
+			void UpdateWeights();
 			size_t nInput() const;
 
 			void SetLearnRate(float a);
@@ -327,6 +335,7 @@ namespace PVX {
 			std::vector<int> TrainOrder;
 			int curIteration = 0;
 			std::vector<int> tmpOrder{ 1, 0 };
+			std::vector<NeuronLayer*> DenseLayers;
 		public:
 			NeuralNetContainer(OutputLayer* OutLayer);
 			NeuralNetContainer(const std::wstring& Filename);
@@ -344,20 +353,20 @@ namespace PVX {
 
 			std::vector<float> ProcessVec(const std::vector<float>& Inp);
 
-			netData Process(const netData& inp);
-			netData Process(const std::vector<netData>& inp);
-			netData ProcessRaw(const netData& inp);
-			netData ProcessRaw(const std::vector<netData>& inp);
+			netData Process(const netData& inp) const;
+			netData Process(const std::vector<netData>& inp) const;
+			netData ProcessRaw(const netData& inp) const;
+			netData ProcessRaw(const std::vector<netData>& inp) const;
 
 			float Train(const netData& inp, const netData& outp);
 			float TrainRaw(const netData& inp, const netData& outp);
 			float Train(const std::vector<netData>& inp, const netData& outp);
 			float TrainRaw(const std::vector<netData>& inp, const netData& outp);
 
-			float Error(const netData& inp, const netData& outp);
-			float ErrorRaw(const netData& inp, const netData& outp);
-			float Error(const std::vector<netData>& inp, const netData& outp);
-			float ErrorRaw(const std::vector<netData>& inp, const netData& outp);
+			float Error(const netData& inp, const netData& outp) const;
+			float ErrorRaw(const netData& inp, const netData& outp) const;
+			float Error(const std::vector<netData>& inp, const netData& outp) const;
+			float ErrorRaw(const std::vector<netData>& inp, const netData& outp) const;
 
 			std::vector<std::pair<float*, size_t>> MakeDNA();
 

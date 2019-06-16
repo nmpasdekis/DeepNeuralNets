@@ -73,7 +73,8 @@ namespace PVX::DeepNeuralNets {
 	}
 
 	void NeuralLayer_Base::FixInputs(const std::vector<NeuralLayer_Base*>& ids) {
-		if (PreviousLayer) PreviousLayer = ids[(*(int*)&PreviousLayer)-1ll];
+		if (PreviousLayer) 
+			PreviousLayer = ids[(*(int*)&PreviousLayer)-1ll];
 		else for (auto& l : InputLayers)
 			l = ids[(*(int*)&l)-1ll];
 	}

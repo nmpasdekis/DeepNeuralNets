@@ -200,7 +200,7 @@ namespace PVX {
 			ret->_iDropout = _iDropout;
 			ret->_L2 = _L2;
 			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(PreviousLayer));
-
+			ret->Id = Id;
 			return ret;
 		}
 		void NeuronLayer::SetLearnRate(float a) {
@@ -331,11 +331,21 @@ namespace PVX {
 			netData grad = Gradient.array() * Derivative(outPart(output)).array();
 			netData prop = Weights.transpose() * grad;
 			PreviousLayer->BackPropagate(outPart(prop));
-			(this->*updateWeights)(grad);
+			if (curGradient.cols()!=grad.cols()) {
+				curGradient.resizeLike(grad);
+				memset(curGradient.data(), 0, sizeof(float) * curGradient.size());
+			}
+			curGradient += grad;
+			//(this->*updateWeights)(grad);
+		}
+
+		void NeuronLayer::UpdateWeights() {
+			(this->*updateWeights)(curGradient);
+			memset(curGradient.data(), 0, sizeof(float) * curGradient.size());
 		}
 
 		size_t NeuronLayer::nInput() const {
-			return Weights.cols();
+			return Weights.cols() - 1;
 		}
 
 	}

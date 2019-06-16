@@ -41,6 +41,7 @@ namespace PVX {
 			auto ret = new NeuronCombiner(nInput());
 			for (auto l : InputLayers)
 				ret->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(IndexOf.at(l)));
+			ret->Id = Id;
 			return ret;
 		}
 
@@ -85,6 +86,10 @@ namespace PVX {
 				i->BackPropagate(Gradient.block(Start, 0, i->nOutput(), Gradient.cols()));
 				Start += i->nOutput();
 			}
+		}
+
+		void NeuronCombiner::UpdateWeights() {
+			for (auto i: InputLayers) i->UpdateWeights();
 		}
 
 		size_t NeuronCombiner::nInput() const {

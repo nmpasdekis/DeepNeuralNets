@@ -118,6 +118,10 @@ namespace PVX::DeepNeuralNets {
 		}
 	}
 	void NeuralNetContainer::CopyWeightsFrom(const NeuralNetContainer& from) {
-
+		auto src = from.DenseLayers.cbegin();
+		auto dst = DenseLayers.begin();
+		for (; src<from.DenseLayers.cend(); ++src, ++dst) {
+			(*dst)->GetWeights() = (*src)->GetWeights();
+		}
 	}
 }
