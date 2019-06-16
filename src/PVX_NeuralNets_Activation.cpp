@@ -57,7 +57,7 @@ namespace PVX {
 			ActivationLayer(inp->nOutput(), Activation) {
 			PreviousLayer = inp;
 		}
-		ActivationLayer::ActivationLayer(int inp, LayerActivation Activation) : activation{ Activation } {
+		ActivationLayer::ActivationLayer(size_t inp, LayerActivation Activation) : activation{ Activation } {
 			PreviousLayer = nullptr;
 			Id = ++NextId;
 			output = netData::Ones(inp + 1ll, 1);

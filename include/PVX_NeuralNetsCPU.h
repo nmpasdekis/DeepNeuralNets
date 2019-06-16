@@ -1,6 +1,8 @@
 #ifndef __PVX_DEEPNEURALNETS_H__
 #define __PVX_DEEPNEURALNETS_H__
 
+#define EIGEN_MPL2_ONLY
+
 #include <Eigen/dense>
 #include <vector>
 #include <PVX_BinSaver.h>
@@ -22,9 +24,9 @@ namespace PVX {
 		};
 
 		struct WeightData {
+			size_t Offset;
+			size_t Count;
 			float * Weights;
-			int Offset;
-			int Count;
 		};
 
 		class NeuralLayer_Base {
@@ -56,7 +58,7 @@ namespace PVX {
 
 			void FixInputs(const std::vector<NeuralLayer_Base*>& ids);
 			std::string name;
-			size_t Id;
+			size_t Id = 0;
 			virtual NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) = 0;
 		public:
 			const std::string& Name() const { return name; };
@@ -114,7 +116,7 @@ namespace PVX {
 
 			void InputRaw(const netData & Data);
 			netData MakeRawInput(const netData & Data);
-			netData MakeRawInput(const float* Data, int Count = 1);
+			netData MakeRawInput(const float* Data, size_t Count = 1);
 			netData MakeRawInput(const std::vector<float>& Input);
 
 			void SetLearnRate(float a) {};
@@ -168,10 +170,10 @@ namespace PVX {
 				_iDropout,
 				_L2;
 		public:
-			NeuronLayer(int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
-			NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
-			NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
-			NeuronLayer(const std::string& Name, NeuralLayer_Base * inp, int nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(size_t nInput, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(const std::string& Name, size_t nInput, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(NeuralLayer_Base * inp, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuronLayer(const std::string& Name, NeuralLayer_Base * inp, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
 			size_t nInput() const;
 
 			void FeedForward(int Version);
@@ -197,7 +199,7 @@ namespace PVX {
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
 			ActivationLayer(NeuralLayer_Base* inp, LayerActivation Activation = LayerActivation::ReLU);
-			ActivationLayer(int inp, LayerActivation Activation = LayerActivation::ReLU);
+			ActivationLayer(size_t inp, LayerActivation Activation = LayerActivation::ReLU);
 			
 			void FeedForward(int Version);
 			void BackPropagate(const netData& TrainData);
@@ -268,7 +270,7 @@ namespace PVX {
 
 		class NetDNA {
 			std::vector<WeightData> Layers;
-			int Size = 0;
+			size_t Size = 0;
 			friend class NeuralNetOutput_Base; 
 			friend class OutputLayer;
 		public:
@@ -315,7 +317,7 @@ namespace PVX {
 			float Train(const float * Data);
 			void Result(float * Result);
 			const netData& Result();
-			int nOutput();
+			size_t nOutput();
 
 			void SaveCheckpoint();
 			float LoadCheckpoint();
@@ -332,9 +334,9 @@ namespace PVX {
 			OutputLayer* Output = nullptr;
 			std::vector<netData> AllInputData;
 			netData AllTrainData;
-			std::vector<int> TrainOrder;
+			std::vector<size_t> TrainOrder;
 			int curIteration = 0;
-			std::vector<int> tmpOrder{ 1, 0 };
+			std::vector<size_t> tmpOrder{ 1, 0 };
 			std::vector<NeuronLayer*> DenseLayers;
 		public:
 			NeuralNetContainer(OutputLayer* OutLayer);

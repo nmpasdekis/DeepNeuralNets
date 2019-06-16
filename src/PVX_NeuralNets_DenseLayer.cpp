@@ -184,7 +184,7 @@ namespace PVX {
 				ret->_iRMSprop = 1.0f - rms;
 				ret->_L2 = l2;
 			}
-			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(prev);// (NeuralLayer_Base*)prev;
+			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(((char*)0) + prev);// (NeuralLayer_Base*)prev;
 			return ret;
 		}
 		NeuralLayer_Base* NeuronLayer::newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) {
@@ -217,7 +217,7 @@ namespace PVX {
 		}
 		static int InitOpenMP = 0;
 
-		NeuronLayer::NeuronLayer(int nInput, int nOutput, LayerActivation Activation, TrainScheme Train) :
+		NeuronLayer::NeuronLayer(size_t nInput, size_t nOutput, LayerActivation Activation, TrainScheme Train) :
 			training{ Train },
 			activation{ Activation },
 			DeltaWeights{ netData::Zero(nOutput, nInput + 1ll) },
@@ -287,17 +287,17 @@ namespace PVX {
 			}
 		}
 
-		NeuronLayer::NeuronLayer(const std::string& Name, int nInput, int nOutput, LayerActivation Activate, TrainScheme Train):
+		NeuronLayer::NeuronLayer(const std::string& Name, size_t nInput, size_t nOutput, LayerActivation Activate, TrainScheme Train):
 			NeuronLayer(nInput, nOutput, Activate, Train) {
 			name = Name;
 		}
 
-		NeuronLayer::NeuronLayer(NeuralLayer_Base * inp, int nOutput, LayerActivation Activate, TrainScheme Train) :
+		NeuronLayer::NeuronLayer(NeuralLayer_Base * inp, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
 			NeuronLayer(inp->nOutput(), nOutput, Activate, Train) {
 			PreviousLayer = inp;
 		}
 
-		NeuronLayer::NeuronLayer(const std::string& Name, NeuralLayer_Base* inp, int nOutput, LayerActivation Activate, TrainScheme Train):
+		NeuronLayer::NeuronLayer(const std::string& Name, NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate, TrainScheme Train):
 			NeuronLayer(inp, nOutput, Activate, Train) {
 			name = Name;
 		}

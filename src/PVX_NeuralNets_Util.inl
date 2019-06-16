@@ -1,3 +1,4 @@
+#define EIGEN_MPL2_ONLY
 #include <Eigen/dense>
 using netData = Eigen::MatrixXf;
 
@@ -5,7 +6,7 @@ inline Eigen::Block<netData, -1, -1, false> outPart(netData & m) {
 	return m.block(0, 0, m.rows() - 1, m.cols());
 }
 
-inline Eigen::Map<netData> Map(float * data, int Rows, int Cols) {
+inline Eigen::Map<netData> Map(float * data, size_t Rows, size_t Cols) {
 	return Eigen::Map< netData>(data, Rows, Cols);
 }
 

@@ -2,7 +2,7 @@
 #include <random>
 
 namespace PVX::DeepNeuralNets {
-	netData Reorder(const netData& data, const int* Order, size_t count) {
+	netData Reorder(const netData& data, const size_t* Order, size_t count) {
 		netData ret(data.rows(), count);
 		for (auto i = 0; i<count; i++)
 			ret.col(i) = data.col(Order[i]);

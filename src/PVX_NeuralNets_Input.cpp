@@ -65,7 +65,7 @@ namespace PVX {
 			return MakeRawInput(Input.data(), Input.size() / nInput());
 		}
 
-		netData InputLayer::MakeRawInput(const float * Data, int Count) {
+		netData InputLayer::MakeRawInput(const float * Data, size_t Count) {
 			return MakeRawInput(Eigen::Map<netData>((float*)Data, output.rows() - 1, Count));
 		}
 

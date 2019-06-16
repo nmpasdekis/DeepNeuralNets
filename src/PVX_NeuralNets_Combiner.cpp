@@ -32,7 +32,7 @@ namespace PVX {
 			auto add = new NeuronCombiner(inp);
 			if (Id>=0)add->Id = Id;
 			for (auto l : layers) {
-				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(l));
+				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(((char*)0) + l));
 			}
 			return add;
 		}
@@ -62,7 +62,7 @@ namespace PVX {
 		void NeuronCombiner::FeedForward(int Version) {
 			if (Version > FeedVersion) {
 				InputLayers[0]->FeedForward(Version);
-				int Start = 0;
+				size_t Start = 0;
 				if (InputLayers[0]->BatchSize() != output.cols()) {
 					output.conservativeResize(Eigen::NoChange, InputLayers[0]->BatchSize());
 				}
@@ -81,7 +81,7 @@ namespace PVX {
 			}
 		}
 		void NeuronCombiner::BackPropagate(const netData & Gradient) {
-			int Start = 0;
+			size_t Start = 0;
 			for (auto i : InputLayers) {
 				i->BackPropagate(Gradient.block(Start, 0, i->nOutput(), Gradient.cols()));
 				Start += i->nOutput();

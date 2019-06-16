@@ -97,7 +97,7 @@ namespace PVX {
 			LastLayer->Gather(g);
 			return g;
 		}
-		int OutputLayer::nOutput() {
+		size_t OutputLayer::nOutput() {
 			return LastLayer->output.rows() - 1;
 		}
 		void OutputLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) {

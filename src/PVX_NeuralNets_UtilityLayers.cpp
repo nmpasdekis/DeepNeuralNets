@@ -26,7 +26,7 @@ namespace PVX {
 			auto add = new NeuronAdder(inp);
 			if (Id>=0)add->Id = Id;
 			for (auto l : layers) {
-				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(l));
+				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(((char*)0) + l));
 			}
 			return add;
 		}
@@ -114,7 +114,7 @@ namespace PVX {
 			auto add = new NeuronMultiplier(inp);
 			if (Id>=0)add->Id = Id;
 			for (auto l : layers) {
-				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(l));
+				add->InputLayers.push_back(reinterpret_cast<NeuralLayer_Base*>(((char*)0) + l));
 			}
 			return add;
 		}
@@ -185,7 +185,7 @@ namespace PVX {
 		}
 
 		netData Concat(const std::vector<netData>& M) {
-			int cols = 0;
+			size_t cols = 0;
 			for (auto& m : M) cols += m.cols();
 			netData ret(M[0].rows(), cols);
 			size_t offset = 0;
