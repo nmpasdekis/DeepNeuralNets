@@ -84,6 +84,16 @@ namespace PVX {
 					break;
 			}
 		}
+		ActivationLayer::ActivationLayer(const std::string& Name, NeuralLayer_Base* inp, LayerActivation Activation):
+			ActivationLayer(inp, Activation) {
+			name = Name;
+		}
+		ActivationLayer::ActivationLayer(const std::string& Name, size_t inp, LayerActivation Activation) :
+			ActivationLayer(inp, Activation) {
+			name = Name;
+		}
+
+
 		void ActivationLayer::FeedForward(int Version) {
 			if (Version > FeedVersion) {
 				PreviousLayer->FeedForward(Version);

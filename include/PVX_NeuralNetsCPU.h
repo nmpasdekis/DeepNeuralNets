@@ -93,9 +93,6 @@ namespace PVX {
 		};
 
 		netData Concat(const std::vector<netData>& m);
-		std::vector<float> Divercity(netData& a);
-		netData DivercitySort(netData& a, const std::vector<float> & div);
-
 
 		class InputLayer : public NeuralLayer_Base {
 		protected:
@@ -200,7 +197,9 @@ namespace PVX {
 		public:
 			ActivationLayer(NeuralLayer_Base* inp, LayerActivation Activation = LayerActivation::ReLU);
 			ActivationLayer(size_t inp, LayerActivation Activation = LayerActivation::ReLU);
-			
+			ActivationLayer(const std::string& Name, NeuralLayer_Base* inp, LayerActivation Activation = LayerActivation::ReLU);
+			ActivationLayer(const std::string& Name, size_t inp, LayerActivation Activation = LayerActivation::ReLU);
+
 			void FeedForward(int Version);
 			void BackPropagate(const netData& TrainData);
 			void UpdateWeights();
@@ -220,6 +219,8 @@ namespace PVX {
 		public:
 			NeuronAdder(const size_t InputSize);
 			NeuronAdder(const std::vector<NeuralLayer_Base*> & Inputs);
+			NeuronAdder(const std::string& Name, const size_t InputSize);
+			NeuronAdder(const std::string& Name, const std::vector<NeuralLayer_Base*>& Inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void BackPropagate(const netData & Gradient);
@@ -325,6 +326,18 @@ namespace PVX {
 			void ResetMomentum();
 
 			NetDNA GetDNA();
+		};
+
+		class ResNetUtility {
+			NeuronLayer First, Middle, Last;
+			NeuronAdder Adder;
+			ActivationLayer Activation;
+		public:
+			ResNetUtility(size_t nInput, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			ResNetUtility(NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			ResNetUtility(const std::string& Name,size_t nInput, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			ResNetUtility(const std::string& Name,NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			ActivationLayer& OutputLayer();
 		};
 
 		class NeuralNetContainer {

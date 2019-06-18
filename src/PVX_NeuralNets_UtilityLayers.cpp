@@ -44,6 +44,16 @@ namespace PVX {
 		NeuronAdder::NeuronAdder(const std::vector<NeuralLayer_Base*>& Inputs) : NeuronAdder(Inputs[0]->nOutput()) {
 			InputLayers = Inputs;
 		}
+		NeuronAdder::NeuronAdder(const std::string& Name, const size_t InputSize) {
+			name = Name;
+			output = netData::Zero(InputSize + 1, 1);
+			Id = ++NextId;
+		}
+		NeuronAdder::NeuronAdder(const std::string& Name, const std::vector<NeuralLayer_Base*>& Inputs) : NeuronAdder(Inputs[0]->nOutput()) {
+			name = Name;
+			InputLayers = Inputs;
+		}
+
 		void NeuronAdder::DNA(std::map<void*, WeightData>& Weights) {
 			for (auto l : InputLayers)
 				l->DNA(Weights);
@@ -196,61 +206,34 @@ namespace PVX {
 			return ret;
 		}
 
-		std::vector<float> Diverse(netData& a) {
-			netData norm(a.rows(), a.cols());
-			for (auto i = 0; i<a.cols(); i++)
-				norm.col(i) = a.col(i).normalized();
+		ResNetUtility::ResNetUtility(size_t nInput, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
+			First{ nInput, nOutput, Activate, Train },
+			Middle{ &First, nOutput, Activate, Train },
+			Last{ &Middle, nOutput, LayerActivation::Linear, Train },
+			Adder({ &First, &Last }),
+			Activation(&Adder, Activate)
+		{}
 
-			std::vector<std::pair<float, Eigen::RowVectorXf>> n;
-			n.reserve(norm.cols());
-			for (auto i = 0; i<a.cols(); i++) {
-				float max = 0.0f;
-				for (auto j = 0; j<i; j++) {
-					float dot = (norm.col(i).transpose() * norm.col(j))(0, 0);
-					if (dot > max) max = dot;
-				}
-				n.emplace_back(max, a.col(i));
-			}
-			std::sort(n.begin(), n.end(), [](auto a, auto b) { return a.first < b.first; });
-
-			std::vector<float> ret;
-			ret.reserve(norm.cols());
-			int cc = 0;
-			for (auto & [d, c]: n) {
-				norm.col(cc++) = c;
-				ret.push_back(d);
-			}
-			a = norm;
-			return ret;
-		}
-
-		std::vector<float> Divercity(netData& a) {
-			netData norm(a.rows(), a.cols());
-			for (auto i = 0; i<a.cols(); i++)
-				norm.col(i) = a.col(i).normalized();
-
-			std::vector<float> n;
-			n.reserve(norm.cols());
-			for (auto i = 0; i<a.cols(); i++) {
-				float max = 0.0f;
-				for (auto j = 0; j<i; j++) {
-					float dot = (norm.col(i).transpose() * norm.col(j))(0, 0);
-					if (dot > max) max = dot;
-				}
-				n.push_back(max);
-			}
-			return n;
-		}
-		netData DivercitySort(netData& a, const std::vector<float>& div) {
-			std::vector<std::pair<float, Eigen::RowVectorXf>> all;
-			for (auto i = 0; i< div.size(); i++)
-				all.emplace_back(div[i], a.col(i));
-			
-			std::sort(all.begin(), all.end(), [](auto a, auto b) { return a.first < b.first; });
-			netData ret(a.rows(), a.cols());
-			for (auto i = 0; i< all.size(); i++)
-				ret.col(i) = all[i].second;
-			return ret;
+		ResNetUtility::ResNetUtility(NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
+			First{ inp, nOutput, Activate, Train },
+			Middle{ &First, nOutput, Activate, Train },
+			Last{ &Middle, nOutput, LayerActivation::Linear, Train },
+			Adder({ &First, &Last }),
+			Activation(&Adder, Activate) {}
+		ResNetUtility::ResNetUtility(const std::string& Name, size_t nInput, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
+			First { Name + "_First", nInput, nOutput, Activate, Train },
+			Middle{ Name + "_Middle",&First, nOutput, Activate, Train },
+			Last  { Name + "_Last",  &Middle, nOutput, LayerActivation::Linear, Train },
+			Adder(Name + "_Adder", { &First, &Last }),
+			Activation(Name + "_Activation", &Adder, Activate) {}
+		ResNetUtility::ResNetUtility(const std::string& Name, NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
+			First { Name + "_First", inp, nOutput, Activate, Train },
+			Middle{ Name + "_Middle",&First, nOutput, Activate, Train },
+			Last  { Name + "_Last",  &Middle, nOutput, LayerActivation::Linear, Train },
+			Adder(Name + "_Adder", { &First, &Last }),
+			Activation(Name + "_Activation", &Adder, Activate) {}
+		ActivationLayer& ResNetUtility::OutputLayer() {
+			return Activation;
 		}
 	}
 }
