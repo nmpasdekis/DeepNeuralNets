@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\src\PVX_Training.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\PVX_NeuralNets_NetContainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\PVX_NeuralNets_Util.inl">

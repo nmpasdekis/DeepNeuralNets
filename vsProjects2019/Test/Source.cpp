@@ -7,6 +7,43 @@ using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
 
 int main() {
+	InputLayer Input("Input", 2);
+	NeuronLayer Hidden1("Hidden1", &Input, 10);
+	NeuronLayer Hidden2("Hidden2", &Hidden1, 10);
+	NeuronLayer Last("Last", &Hidden2, 2);
+	NetContainer nw(&Last);
+
+	netData InputData = nw.MakeRawInput({
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f
+	});
+
+	netData TrainData = nw.FromVector({
+		1.0f, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 1.0f
+	});
+
+	nw.AddTrainDataRaw(InputData, TrainData);
+	nw.SetBatchSize(4);
+
+	float Error = 1.0f;
+	int iter = 0;
+	while (Error>1e-16) {
+		Error = nw.Iterate();
+		//Error = Network.TrainRaw(InputData, TrainData);
+		if (!(iter++%1000)) {
+			//auto r = Network.ProcessRaw(InputData);
+			std::cout << "\r" << log10(Error) << "                              ";
+		}
+	}
+	return 0;
+}
+
+int main3() {
 	{
 		//NeuralLayer_Base::L2Regularization(0.01f);
 		InputLayer Input("Input", 2);

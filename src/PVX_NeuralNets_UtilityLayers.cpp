@@ -206,34 +206,18 @@ namespace PVX {
 			return ret;
 		}
 
-		ResNetUtility::ResNetUtility(size_t nInput, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
-			First{ nInput, nOutput, Activate, Train },
-			Middle{ &First, nOutput, Activate, Train },
-			Last{ &Middle, nOutput, LayerActivation::Linear, Train },
-			Adder({ &First, &Last }),
-			Activation(&Adder, Activate)
-		{}
-
-		ResNetUtility::ResNetUtility(NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
-			First{ inp, nOutput, Activate, Train },
-			Middle{ &First, nOutput, Activate, Train },
-			Last{ &Middle, nOutput, LayerActivation::Linear, Train },
-			Adder({ &First, &Last }),
+		ResNetUtility::ResNetUtility(NeuralLayer_Base* inp, LayerActivation Activate, TrainScheme Train) :
+			First{ inp, inp->nOutput(), Activate, Train },
+			Second{ &First, inp->nOutput(), LayerActivation::Linear, Train },
+			Adder({ inp, &Second }),
 			Activation(&Adder, Activate) {}
-		ResNetUtility::ResNetUtility(const std::string& Name, size_t nInput, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
-			First { Name + "_First", nInput, nOutput, Activate, Train },
-			Middle{ Name + "_Middle",&First, nOutput, Activate, Train },
-			Last  { Name + "_Last",  &Middle, nOutput, LayerActivation::Linear, Train },
-			Adder(Name + "_Adder", { &First, &Last }),
+		ResNetUtility::ResNetUtility(const std::string& Name, NeuralLayer_Base* inp, LayerActivation Activate, TrainScheme Train) :
+			First { Name + "_First", inp, inp->nOutput(), Activate, Train },
+			Second{ Name + "_Second",  &First, inp->nOutput(), LayerActivation::Linear, Train },
+			Adder(Name + "_Adder", { inp, &Second }),
 			Activation(Name + "_Activation", &Adder, Activate) {}
-		ResNetUtility::ResNetUtility(const std::string& Name, NeuralLayer_Base* inp, size_t nOutput, LayerActivation Activate, TrainScheme Train) :
-			First { Name + "_First", inp, nOutput, Activate, Train },
-			Middle{ Name + "_Middle",&First, nOutput, Activate, Train },
-			Last  { Name + "_Last",  &Middle, nOutput, LayerActivation::Linear, Train },
-			Adder(Name + "_Adder", { &First, &Last }),
-			Activation(Name + "_Activation", &Adder, Activate) {}
-		ActivationLayer& ResNetUtility::OutputLayer() {
-			return Activation;
+		NeuralLayer_Base* ResNetUtility::OutputLayer() {
+			return (NeuralLayer_Base*)&Activation;
 		}
 	}
 }

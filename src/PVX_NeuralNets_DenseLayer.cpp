@@ -211,6 +211,7 @@ namespace PVX {
 			return Weights;
 		}
 		void NeuronLayer::ResetMomentum() {
+			//tthis->RMSprop = netData::Zero(this->RMSprop.rows(), this->RMSprop.cols());
 			this->RMSprop = netData::Ones(this->RMSprop.rows(), this->RMSprop.cols());
 			this->DeltaWeights = netData::Zero(this->DeltaWeights.rows(), this->DeltaWeights.cols());
 			PreviousLayer->ResetMomentum();

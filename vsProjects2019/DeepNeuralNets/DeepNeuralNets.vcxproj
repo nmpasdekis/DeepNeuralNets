@@ -26,6 +26,7 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_Container.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_DenseLayer.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Input.cpp" />
+    <ClCompile Include="..\..\src\PVX_NeuralNets_NetContainer.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_UtilityLayers.cpp" />
     <ClCompile Include="..\..\src\PVX_Training.cpp" />
@@ -60,7 +61,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">

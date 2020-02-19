@@ -73,18 +73,25 @@ namespace PVX::DeepNeuralNets {
 	}
 
 	void NeuralLayer_Base::FixInputs(const std::vector<NeuralLayer_Base*>& ids) {
-		if (PreviousLayer) 
+		if (PreviousLayer) {
 			PreviousLayer = ids[(*(int*)&PreviousLayer)-1ll];
-		else for (auto& l : InputLayers)
+			PreviousLayer->OutputRefCount++;
+		}
+		else for (auto& l : InputLayers) {
 			l = ids[(*(int*)&l)-1ll];
+			l->OutputRefCount++;
+		}
 	}
 
 	void NeuralLayer_Base::Input(NeuralLayer_Base* inp) {
 		PreviousLayer = inp;
+		inp->OutputRefCount++;
 	}
 
 	void NeuralLayer_Base::Inputs(const std::vector<NeuralLayer_Base*>& inp) {
 		InputLayers = inp;
+		for (auto i: InputLayers)
+			i->OutputRefCount++;
 	}
 
 	void NeuronLayer::DNA(std::map<void*, WeightData>& w) {

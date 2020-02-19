@@ -60,7 +60,7 @@ namespace PVX {
 		ActivationLayer::ActivationLayer(size_t inp, LayerActivation Activation) : activation{ Activation } {
 			PreviousLayer = nullptr;
 			Id = ++NextId;
-			output = netData::Ones(inp + 1ll, 1);
+			output = netData::Ones(inp + size_t(1), 1);
 			switch (Activation) {
 				case LayerActivation::Tanh:
 					Activate = Tanh;
@@ -102,13 +102,13 @@ namespace PVX {
 					output = netData::Ones(output.rows(), inp.cols());
 				}
 				
-				outPart(output) = Activate(inp);
+				outPart(output) = Activate(outPart(inp));
 				FeedVersion = Version;
 			}
 		}
 		void ActivationLayer::BackPropagate(const netData& Gradient) {
 			netData grad = Gradient.array() * Derivative(outPart(output)).array();
-			PreviousLayer->BackPropagate(outPart(grad));
+			PreviousLayer->BackPropagate(grad);
 		}
 
 		void ActivationLayer::UpdateWeights() {
