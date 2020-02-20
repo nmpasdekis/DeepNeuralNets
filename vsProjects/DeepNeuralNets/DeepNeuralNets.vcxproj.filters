@@ -42,11 +42,9 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_Container.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\PVX_NeuralNets_Util.inl">
+    <ClCompile Include="..\..\src\PVX_NeuralNets_Recurrent.cpp">
       <Filter>Source Files</Filter>
-    </None>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\PVX_BinSaver.h">
@@ -55,5 +53,10 @@
     <ClInclude Include="..\..\include\PVX_NeuralNetsCPU.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\PVX_NeuralNets_Util.inl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

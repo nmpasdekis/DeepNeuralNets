@@ -90,16 +90,6 @@ namespace PVX {
 				i->ResetMomentum();
 		}
 
-		void NeuronCombiner::SetLearnRate(float a) {
-			for (auto l : InputLayers)
-				l->SetLearnRate(a);
-		}
-
-		void NeuronCombiner::ResetMomentum() {
-			for (auto i : InputLayers)
-				i->ResetMomentum();
-		}
-
 		void NeuronMultiplier::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("MULP");
 			{

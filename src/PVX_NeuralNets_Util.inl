@@ -7,7 +7,7 @@ inline Eigen::Block<netData, -1, -1, false> outPart(netData & m) {
 }
 
 inline Eigen::Map<netData> Map(float * data, size_t Rows, size_t Cols) {
-	return Eigen::Map< netData>(data, Rows, Cols);
+	return Eigen::Map<netData>(data, Rows, Cols);
 }
 
 inline int CorrectMat(netData& m) {

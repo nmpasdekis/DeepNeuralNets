@@ -102,7 +102,7 @@ namespace PVX::Solvers {
 				std::swap(g, Generation[0]);
 			curIter++;
 			if (curIter == Population) {
-				//std::nth_element(Generation.begin()+1, Generation.begin()+Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
+				//std::nth_element(Generation.begin()+1, Generation.begin() + Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
 				std::partial_sort(Generation.begin()+1, Generation.begin() + Survive, Generation.end(), [](auto a, auto b) { return a.Error<b.Error; });
 				memcpy(Survived[0].Model, Generation[0].Model, sizeof(float) * ModelSize);
 				Survived[0].Error = Generation[0].Error;

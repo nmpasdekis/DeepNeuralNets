@@ -39,13 +39,13 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\PVX_NeuralNets_Container.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\PVX_Training.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\PVX_NeuralNets_NetContainer.cpp">
+    <ClCompile Include="..\..\src\PVX_NeuralNets_Recurrent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\PVX_NeuralNets_Container.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
