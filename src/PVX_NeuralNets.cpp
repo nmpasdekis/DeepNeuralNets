@@ -66,6 +66,12 @@ namespace PVX::DeepNeuralNets {
 		return output.cols();
 	}
 
+	void NeuralLayer_Base::SetFeedVersion(int ver) {
+		FeedVersion = ver;
+		if (PreviousLayer) PreviousLayer->SetFeedVersion(ver);
+		for (auto& p : InputLayers) p->SetFeedVersion(ver);
+	}
+
 	void NeuralLayer_Base::Gather(std::set<NeuralLayer_Base*>& g) {
 		g.insert(this);
 		if (PreviousLayer)PreviousLayer->Gather(g);

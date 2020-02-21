@@ -63,7 +63,7 @@ namespace PVX::DeepNeuralNets {
 		for (auto l:OwnedLayers) {
 			l->FixInputs(OwnedLayers);
 			if(auto rnn = dynamic_cast<RecurrentLayer*>(l); rnn) 
-				rnn->RecurrentInput = (InputLayer*)OwnedLayers[(*(int*)&rnn->RecurrentInput)-1ll];
+				rnn->RNN_Input = (RecurrentInput*)OwnedLayers[(*(int*)&rnn->RNN_Input)-1ll];
 			if (auto in = dynamic_cast<InputLayer*>(l); in)
 				Inputs.push_back(in);
 		}

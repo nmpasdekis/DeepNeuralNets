@@ -48,6 +48,8 @@ namespace PVX {
 				__iDropout,
 				__L2;
 
+			void SetFeedVersion(int ver);
+
 			void Gather(std::set<NeuralLayer_Base*>& g);
 
 			friend class NeuralNetOutput_Base;
@@ -274,15 +276,39 @@ namespace PVX {
 			void ResetMomentum();
 		};
 
+		class RecurrentLayer;
+
+		class RecurrentInput : public NeuralLayer_Base {
+		protected:
+			friend class NeuralNetContainer;
+			friend class RecurrentLayer;
+			int RecurrentNeuronCount;
+			netData rnnData;
+			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
+			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*, size_t>& IndexOf);
+			static RecurrentInput* Load2(PVX::BinLoader& bin);
+			int BatchSize();
+			void FeedIndex(int i);
+		public:
+			RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons);
+			void DNA(std::map<void*, WeightData>& Weights);
+			void FeedForward(int);
+			void BackPropagate(const netData&);
+			size_t nInput() const;
+			void UpdateWeights();
+			void SetLearnRate(float a);
+			void ResetMomentum();
+		};
+
 		class RecurrentLayer : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*, size_t>& IndexOf);
-			InputLayer* RecurrentInput;
+			RecurrentInput* RNN_Input;
 			static RecurrentLayer* Load2(PVX::BinLoader& bin);
 		public:
-			RecurrentLayer(NeuralLayer_Base* Input, InputLayer* RecurrentInput);
+			RecurrentLayer(NeuralLayer_Base* Input, RecurrentInput* RecurrentInput);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int);
 			void BackPropagate(const netData&);
@@ -363,11 +389,6 @@ namespace PVX {
 			NeuralLayer_Base* OutputLayer() const;
 
 			operator NeuralLayer_Base* () { return OutputLayer(); }
-		};
-
-		class RecurrentInputUtility {
-			NeuronCombiner Combiner;
-			InputLayer RecurrentInput;
 		};
 
 		class NetContainer {

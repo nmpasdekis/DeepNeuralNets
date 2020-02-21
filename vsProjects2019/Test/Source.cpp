@@ -28,13 +28,14 @@ int main() {
 	//NetContainer Output(ResNet4);
 
 	InputLayer Input("Input", 128);
-	InputLayer RecurrentInput("Recurrent Input", 32);
 
-	NeuronCombiner Combiner({ &Input, &RecurrentInput });
-	NeuronLayer Dense1(&Combiner, 32);
+	NeuronLayer Dense0(&Input, 32);
+	RecurrentInput rnnIbput(&Dense0, 32);
+
+	NeuronLayer Dense1(&rnnIbput, 32);
 	NeuronLayer Dense2(&Dense1, 32);
 
-	RecurrentLayer Recurrent(&Dense2, &RecurrentInput);
+	RecurrentLayer Recurrent(&Dense2, &rnnIbput);
 
 	NeuronLayer Dense3(&Recurrent, 128);
 
@@ -42,21 +43,30 @@ int main() {
 
 
 	auto Data = OneHot("PVX_Json.txt");
+	netData Res = netData::Zero(Data.rows(), Data.cols());
+	Res.block(0, 0, Res.rows()-1, Res.cols()) = Data.block(1, 0, Res.rows()-1, Res.cols());
 
-	int iter = 0;
-	float err = Output.Error(Data.col(0), Data.col(1));;
+
+	float err = 1.0f;
 	while (err > 1e-8) {
-		for (auto i = 0; i<Data.cols() - 1; i++) {
-			RecurrentInput.Input(netData::Zero(128, 1));
-			for (auto j = 0; j < i; j++) {
-				Output.Process(Data.col(i));
-			}
-			err = err * 0.9 + 0.1 * Output.Train(Data.col(i), Data.col(i + 1));
-			std::cout << err << "\n";
-		}
-
-		std::cout << "\n";
+		err = 0.9f * err + 0.1f * Output.Train(Data, Res);
+		std::cout << err << "\n";
 	}
+
+	//int iter = 0;
+	//float err = Output.Error(Data.col(0), Data.col(1));;
+	//while (err > 1e-8) {
+	//	for (auto i = 0; i<Data.cols() - 1; i++) {
+	//		//RecurrentInput.Input(netData::Zero(128, 1));
+	//		for (auto j = 0; j < i; j++) {
+	//			Output.Process(Data.col(i));
+	//		}
+	//		err = err * 0.9 + 0.1 * Output.Train(Data.col(i), Data.col(i + 1));
+	//		std::cout << err << "\n";
+	//	}
+
+	//	std::cout << "\n";
+	//}
 
 	return 0;
 }
