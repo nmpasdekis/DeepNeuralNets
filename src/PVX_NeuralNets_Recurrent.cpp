@@ -10,16 +10,21 @@ namespace PVX::DeepNeuralNets {
 		ret->Id = Id;
 		return ret;
 	}
-	RecurrentLayer::RecurrentLayer(NeuralLayer_Base* Input, InputLayer* RecurrentInput) {
-		PreviousLayer = Input;
+	RecurrentLayer::RecurrentLayer(NeuralLayer_Base* Input, InputLayer* RecurrentInput):
+		RecurrentInput{ RecurrentInput }
+	{ 
+		PreviousLayer = Input; 
+		output = Input->Output();
 	}
+
 	void RecurrentLayer::DNA(std::map<void*, WeightData>& Weights) {
 		PreviousLayer->DNA(Weights);
 	}
 	void RecurrentLayer::FeedForward(int Version) {
 		if (Version > FeedVersion) {
 			PreviousLayer->FeedForward(Version);
-			RecurrentInput->Input(PreviousLayer->Output());
+			output = PreviousLayer->Output();
+			RecurrentInput->InputRaw(output);
 			FeedVersion = Version;
 		}
 	}
@@ -37,13 +42,6 @@ namespace PVX::DeepNeuralNets {
 	}
 	void RecurrentLayer::ResetMomentum() {
 		PreviousLayer->ResetMomentum();
-	}
-
-	netData RecurrentLayer::Output() {
-		return PreviousLayer->Output();
-	}
-	netData RecurrentLayer::RealOutput() {
-		return PreviousLayer->RealOutput();
 	}
 
 	void RecurrentLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {

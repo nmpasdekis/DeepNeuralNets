@@ -66,7 +66,7 @@ namespace PVX::Solvers {
 		for(auto i = 1;i<Survived.size();i++){
 			Survived[i].Model = Survived[i - size_t(1)].Model + ModelSize;
 			for (int j = 0; j < ModelSize; j++)
-				Survived[i].Model[j] = Survived[0].Model[j] + MutationVariance * dist(gen);
+				Survived[i].Model[j] = float(Survived[0].Model[j] + MutationVariance * dist(gen));
 		}
 	}
 
@@ -158,7 +158,7 @@ namespace PVX::Solvers {
 
 			for (auto j = 0; j<ModelSize; j++) {
 				if (dist01(gen) < Mutate) {
-					g.Model[j] += dist(gen) * MutationVariance;
+					g.Model[j] += float(dist(gen) * MutationVariance);
 				}
 			}
 		}

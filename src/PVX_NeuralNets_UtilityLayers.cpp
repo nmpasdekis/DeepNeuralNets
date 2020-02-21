@@ -206,8 +206,14 @@ namespace PVX {
 			Second{ Name + "_Second",  &First, inp->nOutput(), LayerActivation::Linear, Train },
 			Adder(Name + "_Adder", { inp, &Second }),
 			Activation(Name + "_Activation", &Adder, Activate) {}
-		NeuralLayer_Base* ResNetUtility::OutputLayer() {
+		ResNetUtility::ResNetUtility(const ResNetUtility& inp, LayerActivation Activate, TrainScheme Train) :
+			ResNetUtility(inp.OutputLayer(), Activate, Train) {}
+		ResNetUtility::ResNetUtility(const std::string& Name, const ResNetUtility& inp, LayerActivation Activate, TrainScheme Train) :
+			ResNetUtility(Name, inp.OutputLayer(), Activate, Train) {}
+		NeuralLayer_Base* ResNetUtility::OutputLayer() const {
 			return (NeuralLayer_Base*)&Activation;
 		}
+
+
 	}
 }

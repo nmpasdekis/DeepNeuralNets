@@ -76,9 +76,9 @@ namespace PVX {
 			virtual void UpdateWeights() = 0;
 
 			size_t nOutput() const;
+			netData Output();
+			netData RealOutput();
 			size_t BatchSize() const;
-			virtual netData Output();
-			virtual netData RealOutput();
 
 			static float LearnRate();
 			static void LearnRate(float Alpha);
@@ -290,8 +290,6 @@ namespace PVX {
 			void UpdateWeights();
 			void SetLearnRate(float a);
 			void ResetMomentum();
-			netData Output();
-			netData RealOutput();
 		};
 
 		class NetDNA {
@@ -359,8 +357,12 @@ namespace PVX {
 			ActivationLayer Activation;
 		public:
 			ResNetUtility(NeuralLayer_Base* inp, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
-			ResNetUtility(const std::string& Name,NeuralLayer_Base* inp, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
-			NeuralLayer_Base* OutputLayer();
+			ResNetUtility(const ResNetUtility& inp, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			ResNetUtility(const std::string& Name, NeuralLayer_Base* inp, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			ResNetUtility(const std::string& Name, const ResNetUtility& inp, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			NeuralLayer_Base* OutputLayer() const;
+
+			operator NeuralLayer_Base* () { return OutputLayer(); }
 		};
 
 		class RecurrentInputUtility {

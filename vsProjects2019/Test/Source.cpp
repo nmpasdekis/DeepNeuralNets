@@ -6,7 +6,63 @@
 using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
 
+netData OneHot(const std::string& Filename);
+
+
 int main() {
+	Eigen::initParallel();
+
+	//InputLayer Input("Input", 128);
+	//InputLayer RecurrentInput("Recurrent Input", 128);
+
+	//NeuronCombiner Combiner({ &Input, &RecurrentInput });
+	//NeuronLayer Dense1(&Combiner, 128);
+
+	//ResNetUtility ResNet1(&Dense1);
+	//ResNetUtility ResNet2(ResNet1);
+	//RecurrentLayer Recurrent(ResNet2, &RecurrentInput);
+
+	//ResNetUtility ResNet3(&Recurrent);
+	//ResNetUtility ResNet4(ResNet3);
+
+	//NetContainer Output(ResNet4);
+
+	InputLayer Input("Input", 128);
+	InputLayer RecurrentInput("Recurrent Input", 32);
+
+	NeuronCombiner Combiner({ &Input, &RecurrentInput });
+	NeuronLayer Dense1(&Combiner, 32);
+	NeuronLayer Dense2(&Dense1, 32);
+
+	RecurrentLayer Recurrent(&Dense2, &RecurrentInput);
+
+	NeuronLayer Dense3(&Recurrent, 128);
+
+	NetContainer Output(&Dense3);
+
+
+	auto Data = OneHot("PVX_Json.txt");
+
+	int iter = 0;
+	float err = Output.Error(Data.col(0), Data.col(1));;
+	while (err > 1e-8) {
+		for (auto i = 0; i<Data.cols() - 1; i++) {
+			RecurrentInput.Input(netData::Zero(128, 1));
+			for (auto j = 0; j < i; j++) {
+				Output.Process(Data.col(i));
+			}
+			err = err * 0.9 + 0.1 * Output.Train(Data.col(i), Data.col(i + 1));
+			std::cout << err << "\n";
+		}
+
+		std::cout << "\n";
+	}
+
+	return 0;
+}
+
+
+int main4() {
 	InputLayer Input("Input", 2);
 	NeuronLayer Hidden1("Hidden1", &Input, 10);
 	NeuronLayer Hidden2("Hidden2", &Hidden1, 10);
@@ -124,7 +180,7 @@ float Poly(float x, const std::vector<float>& Factors) {
 }
 
 std::vector<float> Range(float from, float to, float step) {
-	size_t sz = (to - from)/step;
+	size_t sz = size_t((to - from)/step);
 	std::vector<float> ret(sz);
 	for (auto& t : ret) {
 		t = from;
@@ -188,7 +244,7 @@ int main2() {
 	});
 	gen.OnNewGeneration([&] {
 		for (auto & f : Model) {
-			f = int(f * 10.0f + 0.5f) / 10;
+			f = float(int(f * 10.0f + 0.5f) / 10);
 		}
 		return -1;
 	});
@@ -206,4 +262,25 @@ int main2() {
 	}
 
 	return 0;
+}
+
+
+
+netData OneHot(const std::string& Filename) {
+	FILE* fin;
+	fopen_s(&fin, Filename.c_str(), "rb");
+	fseek(fin, 0, SEEK_END);
+	size_t sz = ftell(fin);
+	fseek(fin, 0, SEEK_SET);
+	std::string Text;
+	Text.resize(sz);
+	fread(&Text[0], 1, sz, fin);
+	fclose(fin);
+
+	netData ret = netData::Zero(128, Text.size() + 1);
+	int i = 1;
+	for (auto& c : Text) {
+		ret(c + 1, i++) = 1.0f;
+	}
+	return ret;
 }

@@ -62,69 +62,81 @@ namespace PVX::DeepNeuralNets {
 
 	netData NetContainer::Process(const netData& inp) const {
 		Inputs[0]->Input(inp);
-		LastLayer->FeedForward(++Version);
-		return LastLayer->Output();
+		FeedForward();
+		return output;
+		//LastLayer->FeedForward(++Version);
+		////return LastLayer->Output();
+		//return outPart(LastLayer->output);
 	}
 	netData NetContainer::Process(const std::vector<netData>& inp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
-		LastLayer->FeedForward(++Version);
-		return LastLayer->Output();
+		FeedForward();
+		return output;
+		//LastLayer->FeedForward(++Version);
+		////return LastLayer->Output();
+		//return outPart(LastLayer->output);
 	}
 	netData NetContainer::ProcessRaw(const netData& inp) const {
 		Inputs[0]->InputRaw(inp);
-		LastLayer->FeedForward(++Version);
-		return LastLayer->Output();
+		FeedForward();
+		return output;
+		//LastLayer->FeedForward(++Version);
+		////return LastLayer->Output();
+		//return outPart(LastLayer->output);
 	}
 	netData NetContainer::ProcessRaw(const std::vector<netData>& inp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
-		LastLayer->FeedForward(++Version);
-		return LastLayer->Output();
+		FeedForward();
+		return output;
+		//LastLayer->FeedForward(++Version);
+		////return LastLayer->Output();
+		//return outPart(LastLayer->output);
 	}
 	float NetContainer::Train(const netData& inp, const netData& outp) {
 		Inputs[0]->Input(inp);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return TrainFnc(outp);
 	}
 	float NetContainer::TrainRaw(const netData& inp, const netData& outp) {
 		Inputs[0]->InputRaw(inp);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return TrainFnc(outp);
 	}
 	float NetContainer::Train(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return TrainFnc(outp);
 	}
 	float NetContainer::TrainRaw(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return TrainFnc(outp);
 	}
 
 	float NetContainer::Error(const netData& inp, const netData& outp) const {
 		Inputs[0]->Input(inp);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return GetErrorFnc(outp);
 	}
 	float NetContainer::ErrorRaw(const netData& inp, const netData& outp) const {
 		Inputs[0]->InputRaw(inp);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return GetErrorFnc(outp);
 	}
 	float NetContainer::Error(const std::vector<netData>& inp, const netData& outp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return GetErrorFnc(outp);
 	}
 	float NetContainer::ErrorRaw(const std::vector<netData>& inp, const netData& outp) const {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->InputRaw(inp[i]);
-		LastLayer->FeedForward(++Version);
+		FeedForward();
 		return GetErrorFnc(outp);
 	}
 
