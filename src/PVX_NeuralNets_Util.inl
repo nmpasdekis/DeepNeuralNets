@@ -6,6 +6,10 @@ inline Eigen::Block<netData, -1, -1, false> outPart(netData & m) {
 	return m.block(0, 0, m.rows() - 1, m.cols());
 }
 
+inline Eigen::Block<netData, -1, -1, false> outPart(netData& m, size_t i) {
+	return m.block(0, i, m.rows() - 1, 1);
+}
+
 inline Eigen::Map<netData> Map(float * data, size_t Rows, size_t Cols) {
 	return Eigen::Map<netData>(data, Rows, Cols);
 }

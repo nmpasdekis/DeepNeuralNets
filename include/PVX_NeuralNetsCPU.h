@@ -36,6 +36,7 @@ namespace PVX {
 
 			netData output;
 			int FeedVersion = -1;
+			int FeedIndexVersion = -1;
 			static int OverrideOnLoad;
 			static size_t NextId;
 			static float
@@ -48,7 +49,7 @@ namespace PVX {
 				__iDropout,
 				__L2;
 
-			void SetFeedVersion(int ver);
+			//void SetFeedVersion(int ver);
 
 			void Gather(std::set<NeuralLayer_Base*>& g);
 
@@ -73,12 +74,14 @@ namespace PVX {
 			void Input(NeuralLayer_Base*);
 			void Inputs(const std::vector<NeuralLayer_Base*>&);
 			virtual void FeedForward(int) = 0;
+			virtual void FeedForward(int Index, int Version) = 0;
 			virtual void BackPropagate(const netData &) = 0;
 			virtual size_t nInput() const = 0;
 			virtual void UpdateWeights() = 0;
 
 			size_t nOutput() const;
 			netData Output();
+			inline auto Output(int i) {return output.col(i); }
 			netData RealOutput();
 			size_t BatchSize() const;
 
@@ -114,6 +117,7 @@ namespace PVX {
 			int Input(const float * Data, int Count = 1);
 			int Input(const netData & Data);
 			void FeedForward(int) {}
+			void FeedForward(int, int) {}
 			void BackPropagate(const netData & Gradient) {}
 			void UpdateWeights() {};
 			size_t nInput() const;
@@ -181,6 +185,7 @@ namespace PVX {
 			size_t nInput() const;
 
 			void FeedForward(int Version);
+			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & TrainData);
 			void UpdateWeights();
 
@@ -208,6 +213,7 @@ namespace PVX {
 			ActivationLayer(const std::string& Name, size_t inp, LayerActivation Activation = LayerActivation::ReLU);
 
 			void FeedForward(int Version);
+			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData& TrainData);
 			void UpdateWeights();
 			void DNA(std::map<void*, WeightData>& Weights);
@@ -230,6 +236,7 @@ namespace PVX {
 			NeuronAdder(const std::string& Name, const std::vector<NeuralLayer_Base*>& Inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
+			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
 			void UpdateWeights();
 			size_t nInput() const;
@@ -249,6 +256,7 @@ namespace PVX {
 			NeuronMultiplier(const std::vector<NeuralLayer_Base*> & inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
+			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
 			void UpdateWeights();
 			size_t nInput() const;
@@ -268,6 +276,7 @@ namespace PVX {
 			NeuronCombiner(const std::vector<NeuralLayer_Base*> & inputs);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
+			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
 			void UpdateWeights();
 			size_t nInput() const;
@@ -283,16 +292,18 @@ namespace PVX {
 			friend class NeuralNetContainer;
 			friend class RecurrentLayer;
 			int RecurrentNeuronCount;
-			netData rnnData;
+			//netData rnnData;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			static RecurrentInput* Load2(PVX::BinLoader& bin);
-			int BatchSize();
-			void FeedIndex(int i);
+			//int BatchSize();
+			//void FeedIndex(int i);
+			Eigen::Block<netData, -1, -1, false> Recur(int Index);
 		public:
 			RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int);
+			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData&);
 			size_t nInput() const;
 			void UpdateWeights();
@@ -311,6 +322,7 @@ namespace PVX {
 			RecurrentLayer(NeuralLayer_Base* Input, RecurrentInput* RecurrentInput);
 			void DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int);
+			void FeedForward(int,int);
 			void BackPropagate(const netData&);
 			size_t nInput() const;
 			void UpdateWeights();

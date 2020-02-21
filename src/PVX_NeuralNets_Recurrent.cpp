@@ -20,20 +20,20 @@ namespace PVX::DeepNeuralNets {
 		if (Version > FeedVersion) {
 			RNN_Input->FeedForward(Version);
 			int bSize = RNN_Input->BatchSize();
-			RNN_Input->SetFeedVersion(Version + bSize);
 			if (output.cols() != bSize) {
 				output = netData::Zero(output.rows(), bSize);
 				output(output.rows()-1, 0) = 1.0f;
 			}
 			for (int i = 0; i<bSize; i++) {
 				RNN_Input->output.block(0, 0, RNN_Input->RecurrentNeuronCount, 1) = output.block(0, i, output.rows() - 1, 1);
-				RNN_Input->FeedIndex(i);
-				PreviousLayer->FeedForward(Version + i);
-				output.col((i + 1) % bSize) = PreviousLayer->Output();
+				PreviousLayer->FeedForward(i, Version);
+				output.col((i + 1) % bSize) = PreviousLayer->Output(i);
 			}
 			output.row(output.rows()-1) = netData::Ones(1, bSize);
-			SetFeedVersion(Version);
 		}
+	}
+	void RecurrentLayer::FeedForward(int Index, int Version) {
+		throw "Unimplementable?";
 	}
 
 	void RecurrentLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
@@ -85,7 +85,6 @@ namespace PVX::DeepNeuralNets {
 	RecurrentInput::RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons) : RecurrentNeuronCount{ RecurrentNeurons } {
 		PreviousLayer = Input;
 		output = netData::Zero(RecurrentNeurons + Input->nOutput() + 1, 1);
-		rnnData = netData::Zero(RecurrentNeurons, 1);
 	}
 	void RecurrentInput::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 		bin.Begin("RNNs");
@@ -122,15 +121,25 @@ namespace PVX::DeepNeuralNets {
 		if (Id>=0)rnn->Id = Id;
 		return rnn;
 	}
-	int RecurrentInput::BatchSize() {
-		return int(PreviousLayer->Output().cols());
-	}
-	void RecurrentInput::FeedIndex(int i) {
-		output.block(RecurrentNeuronCount, 0, rnnData.rows(), 1) = rnnData.col(i);
+	//int RecurrentInput::BatchSize() {
+	//	return int(PreviousLayer->Output().cols());
+	//}
+	//void RecurrentInput::FeedIndex(int i) {
+	//	output.block(RecurrentNeuronCount, 0, rnnData.rows(), 1) = rnnData.col(i);
+	//}
+	Eigen::Block<netData, -1, -1, false> RecurrentInput::Recur(int Index) {
+		return output.block(0, Index, RecurrentNeuronCount, 1);
 	}
 	void RecurrentInput::FeedForward(int ver) {
 		PreviousLayer->FeedForward(ver);
-		rnnData = PreviousLayer->Output();
+		const auto& prev = PreviousLayer->Output();
+		if (output.cols()!=prev.cols()) {
+			output = netData::Zero(prev.rows() + RecurrentNeuronCount, prev.cols());
+		}
+		output.block(RecurrentNeuronCount, 0, prev.rows(), prev.cols()) = prev;
+	}
+	void RecurrentInput::FeedForward(int Index, int ver) {
+		FeedForward(ver);
 	}
 
 
@@ -139,8 +148,8 @@ namespace PVX::DeepNeuralNets {
 	void RecurrentInput::DNA(std::map<void*, WeightData>& Weights) {
 		PreviousLayer->DNA(Weights);
 	}
-	void RecurrentInput::BackPropagate(const netData& Gradient) {
-		PreviousLayer->BackPropagate(Gradient);
+	void RecurrentInput::BackPropagate(const netData& grad) {
+		PreviousLayer->BackPropagate(grad.block(RecurrentNeuronCount, 0, grad.rows()- RecurrentNeuronCount, grad.cols()));
 	}
 	size_t RecurrentInput::nInput() const {
 		return output.rows() - 1;

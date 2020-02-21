@@ -1,4 +1,5 @@
 #include <PVX_NeuralNetsCPU.h>
+#include "PVX_NeuralNets_Util.inl"
 #include <iostream>
 #include <future>
 
@@ -58,6 +59,22 @@ namespace PVX {
 			for (auto l : InputLayers)
 				l->DNA(Weights);
 		}
+		//void NeuronAdder::FeedForward(int Version) {
+		//	if (Version > FeedVersion) {
+		//		InputLayers[0]->FeedForward(Version);
+		//		const auto& inp = PreviousLayer->Output();
+		//		if (inp.cols() != output.cols()) {
+		//			output = netData::Ones(output.rows(), inp.cols());
+		//		}
+		//		outPart(output) = inp;
+		//		for (auto i = 1; i < InputLayers.size(); i++) {
+		//			InputLayers[i]->FeedForward(Version);
+		//			outPart(output) += InputLayers[i]->Output();
+		//		}
+		//		FeedVersion = Version;
+		//	}
+		//}
+
 		void NeuronAdder::FeedForward(int Version) {
 			if (Version > FeedVersion) {
 				InputLayers[0]->FeedForward(Version);
@@ -68,8 +85,30 @@ namespace PVX {
 				}
 				output.row(output.rows() - 1) = netData::Ones(1, output.cols());
 				FeedVersion = Version;
+				FeedIndexVersion = output.cols();
 			}
 		}
+		void NeuronAdder::FeedForward(int Index, int Version) {
+			if (Version > FeedVersion) {
+				FeedVersion = Version;
+				FeedIndexVersion = -1;
+			}
+			if (Index > FeedIndexVersion) {
+				FeedIndexVersion = Index;
+				InputLayers[0]->FeedForward(Index, Version);
+				const auto& pro = InputLayers[0]->Output();
+				if (pro.cols() != output.cols()) {
+					output = netData::Zero(output.rows(), pro.cols());
+				}
+				output.col(Index) = pro.col(Index);
+				for (auto i = 1; i < InputLayers.size(); i++) {
+					InputLayers[i]->FeedForward(Index, Version);
+					output.col(Index) += InputLayers[i]->Output(Index);
+				}
+				output(output.rows()-1, Index) = 1.0f;
+			}
+		}
+
 		void NeuronAdder::BackPropagate(const netData & Gradient) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient);
 		}
@@ -140,18 +179,53 @@ namespace PVX {
 			for (auto l : InputLayers)
 				l->DNA(Weights);
 		}
+		//void NeuronMultiplier::FeedForward(int Version) {
+		//	if (Version > FeedVersion) {
+		//		InputLayers[0]->FeedForward(Version);
+		//		auto tmp = InputLayers[0]->Output().array();
+		//		for (auto i = 1; i < InputLayers.size(); i++) {
+		//			InputLayers[i]->FeedForward(Version);
+		//			tmp *= InputLayers[i]->Output().array();
+		//		}
+		//		output = tmp;
+		//		FeedVersion = Version;
+		//		FeedIndexVersion = output.cols();
+		//	}
+		//}
+
 		void NeuronMultiplier::FeedForward(int Version) {
 			if (Version > FeedVersion) {
 				InputLayers[0]->FeedForward(Version);
-				auto tmp = InputLayers[0]->Output().array();
+				output = InputLayers[0]->Output();
 				for (auto i = 1; i < InputLayers.size(); i++) {
 					InputLayers[i]->FeedForward(Version);
-					tmp *= InputLayers[i]->Output().array();
+					output *= InputLayers[i]->Output();
 				}
-				output = tmp;
 				FeedVersion = Version;
+				FeedIndexVersion = output.cols();
 			}
 		}
+		void NeuronMultiplier::FeedForward(int Index, int Version) {
+			if (Version > FeedVersion) {
+				FeedVersion = Version;
+				FeedIndexVersion = -1;
+			}
+			if (Index > FeedIndexVersion) {
+				FeedIndexVersion = Index;
+				InputLayers[0]->FeedForward(Index, Version);
+				const auto& pro = InputLayers[0]->Output();
+				if (pro.cols() != output.cols()) {
+					output = netData::Zero(output.rows(), pro.cols());
+				}
+				output.col(Index) = pro.col(Index);
+
+				for (auto i = 1; i < InputLayers.size(); i++) {
+					InputLayers[i]->FeedForward(Index, Version);
+					output.col(Index) *= InputLayers[i]->Output().col(Index);
+				}
+			}
+		}
+
 		void NeuronMultiplier::BackPropagate(const netData & Gradient) {
 			{
 				auto tmp = InputLayers[1]->RealOutput().array();

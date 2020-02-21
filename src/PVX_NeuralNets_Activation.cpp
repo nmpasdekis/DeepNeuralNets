@@ -97,13 +97,35 @@ namespace PVX {
 		void ActivationLayer::FeedForward(int Version) {
 			if (Version > FeedVersion) {
 				PreviousLayer->FeedForward(Version);
-				auto inp = PreviousLayer->Output();
-				if (inp.cols() != output.cols()) {
-					output = netData::Ones(output.rows(), inp.cols());
-				}
-				
-				outPart(output) = Activate(outPart(inp));
+				//const auto& inp = PreviousLayer->Output();
+				//if (inp.cols() != output.cols()) {
+				//	output = netData::Ones(output.rows(), inp.cols());
+				//}
+				//
+				//outPart(output) = Activate(outPart(inp));
+				output = Activate(PreviousLayer->Output());
+				output.row(output.rows() - 1) = netData::Ones(1, output.cols());
 				FeedVersion = Version;
+				FeedIndexVersion = output.cols();
+			}
+		}
+		void ActivationLayer::FeedForward(int Index, int Version) {
+			if (Version > FeedVersion) {
+				FeedVersion = Version;
+				FeedIndexVersion = -1;
+			}
+			if (Index > FeedIndexVersion) {
+				FeedIndexVersion = Index;
+				PreviousLayer->FeedForward(Version, Index);
+				const auto& pro = PreviousLayer->Output();
+				if (pro.cols() != output.cols()) {
+					output = netData::Ones(output.rows(), pro.cols());
+				}
+				//auto inp = PreviousLayer->Output(Index);
+
+				//outPart(output, Index) = Activate(outPart(inp));
+				output.col(Index) = Activate(pro.col(Index));
+				output(output.rows() - 1, Index) = 1.0f;
 			}
 		}
 		void ActivationLayer::BackPropagate(const netData& Gradient) {

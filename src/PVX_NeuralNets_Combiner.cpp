@@ -80,6 +80,32 @@ namespace PVX {
 				FeedVersion = Version;
 			}
 		}
+		void NeuronCombiner::FeedForward(int Index, int Version) {
+			if (Version > FeedVersion) {
+				FeedVersion = Version;
+				FeedIndexVersion = -1;
+			}
+			if (Index > FeedIndexVersion) {
+				FeedIndexVersion = Index;
+				InputLayers[0]->FeedForward(Index, Version);
+				size_t Start = 0;
+				if (InputLayers[0]->BatchSize() != output.cols()) {
+					output.conservativeResize(Eigen::NoChange, InputLayers[0]->BatchSize());
+				}
+				{
+					const auto& o = InputLayers[0]->Output(Index);
+					output.block(Start, Index, o.rows(), 1) = o;
+					Start += o.rows() - 1;
+				}
+				for (auto i = 1; i < InputLayers.size(); i++) {
+					InputLayers[i]->FeedForward(Index, Version);
+					const auto& o = InputLayers[i]->Output(Index);
+					output.block(Start, Index, o.rows(), 1) = o;
+					Start += o.rows() - 1; 
+				}
+			}
+		}
+
 		void NeuronCombiner::BackPropagate(const netData & Gradient) {
 			size_t Start = 0;
 			for (auto i : InputLayers) {

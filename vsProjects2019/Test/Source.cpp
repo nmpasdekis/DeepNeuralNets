@@ -12,28 +12,17 @@ netData OneHot(const std::string& Filename);
 int main() {
 	Eigen::initParallel();
 
-	//InputLayer Input("Input", 128);
-	//InputLayer RecurrentInput("Recurrent Input", 128);
-
-	//NeuronCombiner Combiner({ &Input, &RecurrentInput });
-	//NeuronLayer Dense1(&Combiner, 128);
-
-	//ResNetUtility ResNet1(&Dense1);
-	//ResNetUtility ResNet2(ResNet1);
-	//RecurrentLayer Recurrent(ResNet2, &RecurrentInput);
-
-	//ResNetUtility ResNet3(&Recurrent);
-	//ResNetUtility ResNet4(ResNet3);
-
-	//NetContainer Output(ResNet4);
+	NeuralLayer_Base::LearnRate(0.00001f);
+	NeuralLayer_Base::RMSprop(0.9f);
+	NeuralLayer_Base::Momentum(0.9f);
 
 	InputLayer Input("Input", 128);
 
-	NeuronLayer Dense0(&Input, 32);
-	RecurrentInput rnnIbput(&Dense0, 32);
+	NeuronLayer Dense0(&Input, 64);
+	RecurrentInput rnnIbput(&Dense0, 64);
 
-	NeuronLayer Dense1(&rnnIbput, 32);
-	NeuronLayer Dense2(&Dense1, 32);
+	NeuronLayer Dense1(&rnnIbput, 64);
+	NeuronLayer Dense2(&Dense1, 64);
 
 	RecurrentLayer Recurrent(&Dense2, &rnnIbput);
 

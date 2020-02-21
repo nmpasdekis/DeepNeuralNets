@@ -312,7 +312,7 @@ namespace PVX {
 		void NeuronLayer::FeedForward(int Version) {
 			if (Version > FeedVersion) {
 				PreviousLayer->FeedForward(Version);
-				auto inp = PreviousLayer->Output();
+				const auto& inp = PreviousLayer->Output();
 				if (inp.cols() != output.cols()) {
 					output = netData::Ones(output.rows(), inp.cols());
 				}
@@ -325,6 +325,69 @@ namespace PVX {
 					outPart(output) = Activate(Weights * inp);
 				}
 				FeedVersion = Version;
+				FeedIndexVersion = output.cols();
+			}
+		}
+
+		/*
+		
+		void NeuronAdder::FeedForward(int Version) {
+			if (Version > FeedVersion) {
+				InputLayers[0]->FeedForward(Version);
+				output = InputLayers[0]->Output();
+				for (auto i = 1; i < InputLayers.size(); i++) {
+					InputLayers[i]->FeedForward(Version);
+					output += InputLayers[i]->Output();
+				}
+				output.row(output.rows() - 1) = netData::Ones(1, output.cols());
+				FeedVersion = Version;
+			}
+		}
+		void NeuronAdder::FeedForward(int Index, int Version) {
+			if (Version > FeedVersion) {
+				FeedVersion = Version;
+				FeedIndexVersion = -1;
+			}
+			if (Index > FeedIndexVersion) {
+				FeedIndexVersion = Index;
+				InputLayers[0]->FeedForward(Index, Version);
+				const auto& pro = InputLayers[0]->Output();
+				if (pro.cols() != output.cols()) {
+					output = netData::Zero(output.rows(), pro.cols());
+				}
+				output.col(Index) = pro.col(Index);
+				for (auto i = 1; i < InputLayers.size(); i++) {
+					InputLayers[i]->FeedForward(Index, Version);
+					output.col(Index) += InputLayers[i]->Output(Index);
+				}
+				output(output.rows()-1, Index) = 1.0f;
+			}
+		}
+
+		*/
+
+		void NeuronLayer::FeedForward(int Index, int Version) {
+			if (Version > FeedVersion) {
+				FeedVersion = Version;
+				FeedIndexVersion = -1;
+			}
+			if (Index > FeedIndexVersion) {
+				FeedIndexVersion = Index;
+				PreviousLayer->FeedForward(Index, Version);
+				const auto& pro = PreviousLayer->Output();
+				if (pro.cols() != output.cols()) {
+					output = netData::Ones(output.rows(), pro.cols());
+				}
+				const auto& inp = PreviousLayer->Output(Index);
+
+				if (PVX::DeepNeuralNets::UseDropout && _Dropout < 1.0f) {
+					outPart(output, Index) =
+						Activate(Weights * inp).array() *
+						(RandomBias(output.rows() - 1ll, output.cols()) < _Dropout).cast<float>() *
+						_iDropout;
+				} else {
+					outPart(output, Index) = Activate(Weights * inp);
+				}
 			}
 		}
 
