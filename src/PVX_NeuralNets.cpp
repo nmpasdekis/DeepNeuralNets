@@ -66,11 +66,22 @@ namespace PVX::DeepNeuralNets {
 		return output.cols();
 	}
 
-	//void NeuralLayer_Base::SetFeedVersion(int ver) {
-	//	FeedVersion = ver;
-	//	if (PreviousLayer) PreviousLayer->SetFeedVersion(ver);
-	//	for (auto& p : InputLayers) p->SetFeedVersion(ver);
-	//}
+	void NeuralLayer_Base::SetLearnRate(float Beta) {
+		if (PreviousLayer)PreviousLayer->SetLearnRate(Beta);
+		for (auto& p : InputLayers) p->SetLearnRate(Beta);
+	}
+	void NeuralLayer_Base::SetRMSprop(float Beta) {
+		if (PreviousLayer)PreviousLayer->SetRMSprop(Beta);
+		for (auto& p : InputLayers) p->SetRMSprop(Beta);
+	}
+	void NeuralLayer_Base::SetMomentum(float Beta) {
+		if (PreviousLayer)PreviousLayer->SetMomentum(Beta);
+		for (auto& p : InputLayers) p->SetMomentum(Beta);
+	}
+	void NeuralLayer_Base::ResetMomentum() {
+		if (PreviousLayer)PreviousLayer->ResetMomentum();
+		for (auto& p : InputLayers) p->ResetMomentum();
+	}
 
 	void NeuralLayer_Base::Gather(std::set<NeuralLayer_Base*>& g) {
 		g.insert(this);
@@ -100,14 +111,11 @@ namespace PVX::DeepNeuralNets {
 			i->OutputRefCount++;
 	}
 
-	void NeuronLayer::DNA(std::map<void*, WeightData>& w) {
-		if (!w.count(this)) {
-			WeightData ret;
-			ret.Weights = Weights.data();
-			ret.Count = Weights.size();
-			w[this] = ret;
+	void NetDNA::GetData(std::vector<float>& Data) {
+		if (Size!=Data.size())Data.resize(Size);
+		for (auto& w : Layers) {
+			memcpy_s(Data.data() + w.Offset, sizeof(float) * w.Count, w.Weights, sizeof(float) * w.Count);
 		}
-		PreviousLayer->DNA(w);
 	}
 
 	std::vector<float> NetDNA::GetData() {
@@ -115,7 +123,7 @@ namespace PVX::DeepNeuralNets {
 		for (auto& w : Layers) {
 			memcpy_s(ret.data() + w.Offset, sizeof(float) * w.Count, w.Weights, sizeof(float) * w.Count);
 		}
-		return ret;
+		return std::move(ret);
 	}
 	void NetDNA::SetData(const float* Data) {
 		for (auto& w : Layers)

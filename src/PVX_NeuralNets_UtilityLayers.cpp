@@ -55,9 +55,11 @@ namespace PVX {
 			InputLayers = Inputs;
 		}
 
-		void NeuronAdder::DNA(std::map<void*, WeightData>& Weights) {
+		size_t NeuronAdder::DNA(std::map<void*, WeightData>& Weights) {
+			size_t ret = 0;
 			for (auto l : InputLayers)
-				l->DNA(Weights);
+				ret += l->DNA(Weights);
+			return ret;
 		}
 		//void NeuronAdder::FeedForward(int Version) {
 		//	if (Version > FeedVersion) {
@@ -119,16 +121,6 @@ namespace PVX {
 			return output.rows() - 1;
 		}
 
-		void NeuronAdder::SetLearnRate(float a) {
-			for (auto l : InputLayers)
-				l->SetLearnRate(a);
-		}
-
-		void NeuronAdder::ResetMomentum() {
-			for (auto i : InputLayers)
-				i->ResetMomentum();
-		}
-
 		void NeuronMultiplier::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 			bin.Begin("MULP");
 			{
@@ -175,9 +167,11 @@ namespace PVX {
 			for (auto& i : inputs) InputLayers.push_back(i);
 			output = netData::Zero(InputLayers[0]->Output().rows(), 1);
 		}
-		void NeuronMultiplier::DNA(std::map<void*, WeightData>& Weights) {
+		size_t NeuronMultiplier::DNA(std::map<void*, WeightData>& Weights) {
+			size_t ret = 0;
 			for (auto l : InputLayers)
-				l->DNA(Weights);
+				ret += l->DNA(Weights);
+			return ret;
 		}
 		//void NeuronMultiplier::FeedForward(int Version) {
 		//	if (Version > FeedVersion) {
@@ -247,15 +241,6 @@ namespace PVX {
 		}
 		size_t NeuronMultiplier::nInput() const {
 			return output.cols();
-		}
-
-		void NeuronMultiplier::SetLearnRate(float a) {
-			for (auto i : InputLayers)
-				i->SetLearnRate(a);
-		}
-		void NeuronMultiplier::ResetMomentum() {
-			for (auto i : InputLayers)
-				i->ResetMomentum();
 		}
 
 		netData Concat(const std::vector<netData>& M) {

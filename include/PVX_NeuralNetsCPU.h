@@ -49,7 +49,7 @@ namespace PVX {
 				__iDropout,
 				__L2;
 
-			//void SetFeedVersion(int ver);
+			//void SetFeedVersion(int ver);size_t DNA
 
 			void Gather(std::set<NeuralLayer_Base*>& g);
 
@@ -70,7 +70,7 @@ namespace PVX {
 			virtual NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf) = 0;
 		public:
 			const std::string& Name() const { return name; };
-			virtual void DNA(std::map<void*, WeightData> & Weights) = 0;
+			virtual size_t DNA(std::map<void*, WeightData> & Weights) = 0;
 			void Input(NeuralLayer_Base*);
 			void Inputs(const std::vector<NeuralLayer_Base*>&);
 			virtual void FeedForward(int) = 0;
@@ -98,8 +98,10 @@ namespace PVX {
 			static void UseDropout(int);
 			static void OverrideParamsOnLoad(int ovrd = 1);
 			
-			virtual void SetLearnRate(float a) = 0;
-			virtual void ResetMomentum() = 0;
+			virtual void SetLearnRate(float a);
+			virtual void SetRMSprop(float Beta);
+			virtual void SetMomentum(float Beta);
+			virtual void ResetMomentum();
 		};
 
 		netData Concat(const std::vector<netData>& m);
@@ -107,11 +109,12 @@ namespace PVX {
 		class InputLayer : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			InputLayer(PVX::BinLoader& bin);
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
-			void DNA(std::map<void*, WeightData> & Weights) {};
+			size_t DNA(std::map<void*, WeightData>& Weights);
 			InputLayer(const size_t Size);
 			InputLayer(const std::string& Name, const size_t Size);
 			int Input(const float * Data, int Count = 1);
@@ -127,7 +130,9 @@ namespace PVX {
 			netData MakeRawInput(const float* Data, size_t Count = 1);
 			netData MakeRawInput(const std::vector<float>& Input);
 
-			void SetLearnRate(float a) {};
+			void SetLearnRate(float) {};
+			void SetRMSprop(float) {};
+			void SetMomentum(float) {};
 			void ResetMomentum() {};
 		};
 
@@ -141,6 +146,7 @@ namespace PVX {
 		class NeuronLayer : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			netData Weights;
 			netData DeltaWeights;
 			netData RMSprop;
@@ -189,8 +195,10 @@ namespace PVX {
 			void BackPropagate(const netData & TrainData);
 			void UpdateWeights();
 
-			void DNA(std::map<void*, WeightData> & Weights);
+			size_t DNA(std::map<void*, WeightData> & Weights);
 			void SetLearnRate(float a);
+			void SetRMSprop(float Beta);
+			void SetMomentum(float Beta);
 			void ResetMomentum();
 
 			netData & GetWeights();
@@ -199,6 +207,7 @@ namespace PVX {
 		class ActivationLayer :NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			netData(*Activate)(const netData& Gradient);
 			netData(*Derivative)(const netData& Gradient);
 			LayerActivation activation;
@@ -216,9 +225,7 @@ namespace PVX {
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData& TrainData);
 			void UpdateWeights();
-			void DNA(std::map<void*, WeightData>& Weights);
-			void SetLearnRate(float a);
-			void ResetMomentum();
+			size_t DNA(std::map<void*, WeightData>& Weights);
 
 			size_t nInput() const;
 		};
@@ -226,6 +233,7 @@ namespace PVX {
 		class NeuronAdder : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			static NeuronAdder* Load2(PVX::BinLoader& bin);
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
@@ -234,55 +242,48 @@ namespace PVX {
 			NeuronAdder(const std::vector<NeuralLayer_Base*> & Inputs);
 			NeuronAdder(const std::string& Name, const size_t InputSize);
 			NeuronAdder(const std::string& Name, const std::vector<NeuralLayer_Base*>& Inputs);
-			void DNA(std::map<void*, WeightData>& Weights);
+			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
 			void UpdateWeights();
 			size_t nInput() const;
-
-			void SetLearnRate(float a);
-			void ResetMomentum();
 		};
 
 		class NeuronMultiplier : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			static NeuronMultiplier* Load2(PVX::BinLoader& bin);
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
 			NeuronMultiplier(const size_t inputs);
 			NeuronMultiplier(const std::vector<NeuralLayer_Base*> & inputs);
-			void DNA(std::map<void*, WeightData>& Weights);
+			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
 			void UpdateWeights();
 			size_t nInput() const;
-
-			void SetLearnRate(float a);
-			void ResetMomentum();
 		};
 
 		class NeuronCombiner : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			static NeuronCombiner* Load2(PVX::BinLoader& bin);
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*,size_t>& IndexOf);
 		public:
 			NeuronCombiner(const size_t inputs);
 			NeuronCombiner(const std::vector<NeuralLayer_Base*> & inputs);
-			void DNA(std::map<void*, WeightData>& Weights);
+			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
 			void UpdateWeights();
 			size_t nInput() const;
-
-			void SetLearnRate(float a);
-			void ResetMomentum();
 		};
 
 		class RecurrentLayer;
@@ -291,6 +292,7 @@ namespace PVX {
 		protected:
 			friend class NeuralNetContainer;
 			friend class RecurrentLayer;
+			friend class NetContainer;
 			int RecurrentNeuronCount;
 			//netData rnnData;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
@@ -299,35 +301,36 @@ namespace PVX {
 			//int BatchSize();
 			//void FeedIndex(int i);
 			Eigen::Block<netData, -1, -1, false> Recur(int Index);
+			RecurrentInput(int Size, int nOut);
 		public:
 			RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons);
-			void DNA(std::map<void*, WeightData>& Weights);
+			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData&);
 			size_t nInput() const;
 			void UpdateWeights();
-			void SetLearnRate(float a);
-			void ResetMomentum();
 		};
 
 		class RecurrentLayer : public NeuralLayer_Base {
 		protected:
 			friend class NeuralNetContainer;
+			friend class NetContainer;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			RecurrentInput* RNN_Input;
 			static RecurrentLayer* Load2(PVX::BinLoader& bin);
+			RecurrentLayer(int outCount);
 		public:
 			RecurrentLayer(NeuralLayer_Base* Input, RecurrentInput* RecurrentInput);
-			void DNA(std::map<void*, WeightData>& Weights);
+			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int);
 			void FeedForward(int,int);
 			void BackPropagate(const netData&);
 			size_t nInput() const;
 			void UpdateWeights();
-			void SetLearnRate(float a);
-			void ResetMomentum();
+
+			void Reset();
 		};
 
 		class NetDNA {
@@ -335,7 +338,9 @@ namespace PVX {
 			size_t Size = 0;
 			friend class NeuralNetOutput_Base; 
 			friend class OutputLayer;
+			friend class NetContainer;
 		public:
+			void GetData(std::vector<float>& Data);
 			std::vector<float> GetData();
 			void SetData(const float * Data);
 		};
@@ -413,6 +418,10 @@ namespace PVX {
 			netData output;
 			mutable int Version = 0;
 
+			NetDNA Checkpoint;
+			float CheckpointError = -1.0f;
+			std::vector<float> CheckpointDNA;
+
 			std::vector<netData> AllInputData;
 			netData AllTrainData;
 			std::vector<size_t> TrainOrder;
@@ -430,17 +439,28 @@ namespace PVX {
 			std::function<void()> FeedForward;
 			std::function<float(const netData&)> GetErrorFnc;
 			std::function<float(const netData&)> TrainFnc;
-
+			std::vector<RecurrentLayer*> RNNs;
 			float error = -1.0f;
+			void Init();
 		public:
 			NetContainer(NeuralLayer_Base* Last, OutputType Type = OutputType::MeanSquare);
+			NetContainer(const std::wstring& Filename);
 			~NetContainer();
 
 			void Save(const std::wstring& Filename);
+			NetDNA GetDNA();
 			void SaveCheckpoint();
 			float LoadCheckpoint();
 
+			float SaveCheckpoint(std::vector<float>& data);
+			void LoadCheckpoint(const std::vector<float>& data, float Error);
+
+			void SetLearnRate(float a);
+			void SetRMSprop(float Beta);
+			void SetMomentum(float Beta);
 			void ResetMomentum();
+
+			void ResetRNN();
 
 			netData MakeRawInput(const netData& inp);
 			netData MakeRawInput(const std::vector<float>& inp);
@@ -463,9 +483,7 @@ namespace PVX {
 			float ErrorRaw(const netData& inp, const netData& outp) const;
 			float Error(const std::vector<netData>& inp, const netData& outp) const;
 			float ErrorRaw(const std::vector<netData>& inp, const netData& outp) const;
-
-			std::vector<std::pair<float*, size_t>> MakeDNA();
-
+			
 			void AddTrainDataRaw(const netData& inp, const netData& outp);
 			void AddTrainDataRaw(const std::vector<netData>& inp, const netData& outp);
 			void AddTrainData(const netData& inp, const netData& outp);
@@ -473,7 +491,6 @@ namespace PVX {
 
 			void SetBatchSize(int sz);
 			float Iterate();
-			void CopyWeightsFrom(const NetContainer& from);
 		};
 
 		class NeuralNetContainer {

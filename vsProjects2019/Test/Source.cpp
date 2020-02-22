@@ -7,39 +7,70 @@ using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
 
 netData OneHot(const std::string& Filename);
+netData OneHot2();
 
 
 int main() {
-	Eigen::initParallel();
+	if(false)
+	{
+		NeuralLayer_Base::LearnRate(0.001f);
+		NeuralLayer_Base::RMSprop(0.9f);
+		NeuralLayer_Base::Momentum(0.9f);
 
-	NeuralLayer_Base::LearnRate(0.00001f);
-	NeuralLayer_Base::RMSprop(0.9f);
-	NeuralLayer_Base::Momentum(0.9f);
+		InputLayer Input("Input", 128);
 
-	InputLayer Input("Input", 128);
+		NeuronLayer Dense0(&Input, 32);
+		RecurrentInput rnnIbput(&Dense0, 32);
 
-	NeuronLayer Dense0(&Input, 64);
-	RecurrentInput rnnIbput(&Dense0, 64);
+		NeuronLayer Dense1(&rnnIbput, 32);
+		NeuronLayer Dense2(&Dense1, 32);
+		NeuronLayer Dense3(&Dense2, 32, LayerActivation::Tanh);
 
-	NeuronLayer Dense1(&rnnIbput, 64);
-	NeuronLayer Dense2(&Dense1, 64);
+		RecurrentLayer Recurrent(&Dense3, &rnnIbput);
 
-	RecurrentLayer Recurrent(&Dense2, &rnnIbput);
+		NeuronLayer Dense4(&Recurrent, 128);
 
-	NeuronLayer Dense3(&Recurrent, 128);
+		NetContainer Output(&Dense4);
 
-	NetContainer Output(&Dense3);
+		Output.Save(L"RNN.pvx");
+	}
+	NetContainer Output(L"RNN.pvx");
 
+	Output.SetRMSprop(0.999);
+	Output.SetLearnRate(0.001f);
+	Output.SetMomentum(0.999);
 
-	auto Data = OneHot("PVX_Json.txt");
+	std::vector<float> tmp;
+	float tmpError;
+
+	//auto Data = OneHot("PVX_Json.txt");
+	auto Data = OneHot2();
 	netData Res = netData::Zero(Data.rows(), Data.cols());
 	Res.block(0, 0, Res.rows()-1, Res.cols()) = Data.block(1, 0, Res.rows()-1, Res.cols());
 
-
-	float err = 1.0f;
+	int Iter = 0;;
+	float err = Output.Error(Data, Res);
+	float BestError = err;
 	while (err > 1e-8) {
-		err = 0.9f * err + 0.1f * Output.Train(Data, Res);
+		Output.ResetRNN();
+		err = Output.Train(Data, Res);
 		std::cout << err << "\n";
+		//err = 0.9f * err + 0.1f * Output.Train(Data, Res);
+		//Output.Save(L"RNN.pvx");
+		//if (err < BestError) {
+		//	Output.SaveCheckpoint();
+		//	BestError = err;
+		//}
+		if (!((++Iter)%100)) {
+			Output.Save(L"RNN.pvx");
+			//tmpError = Output.SaveCheckpoint(tmp);
+			//Output.LoadCheckpoint();
+			//err = BestError;
+			//Output.Save(L"RNN.pvx");
+			//
+			//Output.LoadCheckpoint(tmp, tmpError);
+			std::cout << "Saved\n";
+		}
 	}
 
 	//int iter = 0;
@@ -275,6 +306,17 @@ netData OneHot(const std::string& Filename) {
 	Text.resize(sz);
 	fread(&Text[0], 1, sz, fin);
 	fclose(fin);
+
+	netData ret = netData::Zero(128, Text.size() + 1);
+	int i = 1;
+	for (auto& c : Text) {
+		ret(c + 1, i++) = 1.0f;
+	}
+	return ret;
+}
+
+netData OneHot2() {
+	std::wstring Text = L"123123123";
 
 	netData ret = netData::Zero(128, Text.size() + 1);
 	int i = 1;

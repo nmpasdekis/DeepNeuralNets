@@ -32,6 +32,7 @@ namespace PVX {
 			output = netData::Ones(Size + 1ll, 1ll);
 		}
 
+		size_t InputLayer::DNA(std::map<void*, WeightData>& Weights) { return 0; }
 
 		int InputLayer::Input(const float * Data, int Count) {
 			if (output.cols() != Count)

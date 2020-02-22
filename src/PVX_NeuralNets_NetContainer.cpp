@@ -2,6 +2,54 @@
 #include "PVX_NeuralNets_Util.inl"
 
 namespace PVX::DeepNeuralNets {
+
+	void NetContainer::Save(const std::wstring& Filename) {
+		std::map<NeuralLayer_Base*, size_t> g;
+		std::vector<NeuralLayer_Base*> all;
+		{
+			std::set<NeuralLayer_Base*> All;
+			LastLayer->Gather(All);
+
+			size_t i = 1;
+			for (auto l : All) {
+				all.push_back(l);
+				g[l] = i++;
+			}
+		}
+		PVX::BinSaver bin(Filename.c_str(), "NWK2"); {
+			bin.Write("TYPE", int(Type));
+			bin.Write("ERRO", error);
+			bin.Write("LAST", g[LastLayer]);
+			bin.Begin("LYRS"); for (auto l: all) {
+				l->Save(bin, g);
+			} bin.End();
+		}
+	}
+	void NetContainer::SaveCheckpoint() {
+		Checkpoint.GetData(CheckpointDNA);
+		CheckpointError = error;
+	}
+	float NetContainer::LoadCheckpoint() {
+		error = CheckpointError;
+		Checkpoint.SetData(CheckpointDNA.data());
+		return error;
+	}
+	float NetContainer::SaveCheckpoint(std::vector<float>& data) {
+		Checkpoint.GetData(data);
+		return error;
+	}
+	void NetContainer::LoadCheckpoint(const std::vector<float>& data, float Error) {
+		Checkpoint.SetData(data.data());
+		error = Error;
+	}
+	void NetContainer::SetLearnRate(float a) { LastLayer->SetLearnRate(a); }
+	void NetContainer::SetRMSprop(float Beta) { LastLayer->SetRMSprop(Beta); }
+	void NetContainer::SetMomentum(float Beta) { LastLayer->SetMomentum(Beta); }
+	void NetContainer::ResetMomentum() { LastLayer->ResetMomentum(); }
+
+	void NetContainer::ResetRNN() {
+		for (auto r : RNNs) r->Reset();
+	}
 	netData NetContainer::MakeRawInput(const netData& inp) {
 		return Inputs[0]->MakeRawInput(inp);
 	}
@@ -15,8 +63,7 @@ namespace PVX::DeepNeuralNets {
 			ret.push_back(l->MakeRawInput(inp[i++]));
 		return ret;
 	}
-
-	NetContainer::NetContainer(NeuralLayer_Base* Last, OutputType Type) :LastLayer{ Last }, Type{ Type } {
+	void NetContainer::Init() {
 		switch (Type) {
 			case PVX::DeepNeuralNets::OutputType::MeanSquare:
 				FeedForward = [this] { FeedForwardMeanSquare(); };
@@ -45,14 +92,75 @@ namespace PVX::DeepNeuralNets {
 				Inputs.push_back(Inp);
 			else {
 				auto dense = dynamic_cast<NeuronLayer*>(l);
-				if (dense) {
+				if (dense) 
 					DenseLayers.push_back(dense);
+				else {
+					auto rnns = dynamic_cast<RecurrentLayer*>(l);
+					if (rnns) RNNs.push_back(rnns);
 				}
 			}
 		}
 		std::sort(DenseLayers.begin(), DenseLayers.end(), [](NeuronLayer* a, NeuronLayer* b) {
 			return a->Id<b->Id;
 		});
+
+		Checkpoint = GetDNA();
+	}
+	NetContainer::NetContainer(NeuralLayer_Base* Last, OutputType Type) :LastLayer{ Last }, Type{ Type } {
+		Init();
+	}
+	NetContainer::NetContainer(const std::wstring& Filename) {
+		{
+			size_t LastLayerIndex;
+			int tp;
+			PVX::BinLoader bin(Filename.c_str(), "NWK2");
+			bin.Process("LYRS", [&](PVX::BinLoader& bin2) {
+				bin2.Process("ACTV", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(ActivationLayer::Load2(bin3));
+				});
+				bin2.Process("INPT", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(new InputLayer(bin3));
+				});
+				bin2.Process("DENS", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(NeuronLayer::Load2(bin3));
+				});
+				bin2.Process("ADDR", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(NeuronAdder::Load2(bin3));
+				});
+				bin2.Process("MULP", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(NeuronMultiplier::Load2(bin3));
+				});
+				bin2.Process("CMBN", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(NeuronCombiner::Load2(bin3));
+				});
+				bin2.Process("RNNe", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(RecurrentLayer::Load2(bin3));
+				});
+				bin2.Process("RNNs", [&](PVX::BinLoader& bin3) {
+					this->OwnedLayers.push_back(RecurrentInput::Load2(bin3));
+				});
+			});
+
+			bin.Process("LAST", [&](PVX::BinLoader& bin2) { 
+				LastLayerIndex = bin2.read<size_t>(); 
+			});
+			bin.Process("TYPE", [&](PVX::BinLoader& bin2) { 
+				tp = bin2.read<int>();
+			});
+			bin.Process("ERRO", [&](PVX::BinLoader& bin2) { 
+				error = bin2.read<float>(); 
+			});
+			bin.Execute();
+			Type = OutputType(tp);
+			LastLayer = OwnedLayers[LastLayerIndex-1ll];
+		}
+		for (auto l : OwnedLayers) {
+			l->FixInputs(OwnedLayers);
+			auto rnns = dynamic_cast<RecurrentLayer*>(l);
+			if (rnns) 
+				rnns->RNN_Input = (RecurrentInput*)OwnedLayers[(*(int*)&rnns->RNN_Input)-1ll];
+		}
+		Init();
 	}
 	NetContainer::~NetContainer() {
 		if (OwnedLayers.size()) {
@@ -190,7 +298,7 @@ namespace PVX::DeepNeuralNets {
 			r *= 1.0f / r.sum();
 		}
 	}
-
+	
 	netData Reorder2(const netData& data, const size_t* Order, size_t count) {
 		netData ret(data.rows(), count);
 		for (auto i = 0; i<count; i++)
@@ -229,6 +337,19 @@ namespace PVX::DeepNeuralNets {
 			FeedForward();
 			return TrainFnc(AllTrainData);
 		}
+	}
+
+	NetDNA NetContainer::GetDNA() {
+		std::map<void*, WeightData> data;
+		LastLayer->DNA(data);
+		NetDNA ret;
+		ret.Size = 0;
+		for (auto& [l, dt] : data) {
+			dt.Offset = ret.Size;
+			ret.Size += dt.Count;
+			ret.Layers.push_back(dt);
+		}
+		return ret;
 	}
 
 
@@ -311,6 +432,12 @@ namespace PVX::DeepNeuralNets {
 		auto r = LastLayer->nOutput();
 		netData ret(r, Data.size()/r);
 		memcpy(ret.data(), Data.data(), Data.size() * sizeof(float));
+		return ret;
+	}
+	std::vector<float> NetContainer::ProcessVec(const std::vector<float>& Inp) {
+		auto tmp = ProcessRaw(Inputs[0]->MakeRawInput(Inp));
+		std::vector<float> ret(tmp.size());
+		memcpy(ret.data(), tmp.data(), ret.size() * sizeof(float));
 		return ret;
 	}
 };

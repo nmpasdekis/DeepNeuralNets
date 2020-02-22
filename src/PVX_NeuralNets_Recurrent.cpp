@@ -10,12 +10,6 @@ namespace PVX::DeepNeuralNets {
 		ret->Id = Id;
 		return ret;
 	}
-	RecurrentLayer::RecurrentLayer(NeuralLayer_Base* Input, RecurrentInput* RecurrentInput):
-		RNN_Input{ RecurrentInput }
-	{ 
-		PreviousLayer = Input; 
-		output = Input->Output();
-	}
 	void RecurrentLayer::FeedForward(int Version) {
 		if (Version > FeedVersion) {
 			RNN_Input->FeedForward(Version);
@@ -25,20 +19,34 @@ namespace PVX::DeepNeuralNets {
 				output(output.rows()-1, 0) = 1.0f;
 			}
 			for (int i = 0; i<bSize; i++) {
-				RNN_Input->output.block(0, 0, RNN_Input->RecurrentNeuronCount, 1) = output.block(0, i, output.rows() - 1, 1);
+				RNN_Input->output.block(0, i, RNN_Input->RecurrentNeuronCount, 1) = output.block(0, i, output.rows() - 1, 1);
 				PreviousLayer->FeedForward(i, Version);
 				output.col((i + 1) % bSize) = PreviousLayer->Output(i);
 			}
 			output.row(output.rows()-1) = netData::Ones(1, bSize);
 		}
 	}
+	void RecurrentLayer::Reset() {
+		output.block(0, 0, output.rows()-1, 1) = netData::Zero(output.rows()-1, 1);
+	}
 	void RecurrentLayer::FeedForward(int Index, int Version) {
 		throw "Unimplementable?";
+	}
+
+	RecurrentLayer::RecurrentLayer(int outCount) {
+		output = netData::Ones(outCount, 1);
+	}
+
+	RecurrentLayer::RecurrentLayer(NeuralLayer_Base* Input, RecurrentInput* RecurrentInput) :
+		RNN_Input{ RecurrentInput } {
+		PreviousLayer = Input;
+		output = Input->Output();
 	}
 
 	void RecurrentLayer::Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const {
 		bin.Begin("RNNe");
 		{
+			bin.Write("INPC", int(output.rows()));
 			bin.Write("NDID", int(Id));
 			bin.Begin("LYRS"); {
 				bin.write(int(IndexOf.at(PreviousLayer)));
@@ -49,20 +57,21 @@ namespace PVX::DeepNeuralNets {
 	}
 	RecurrentLayer* RecurrentLayer::Load2(PVX::BinLoader& bin) {
 		int Id = -1;
+		int outCount;
 		std::vector<int> layers;
-		bin.Read("LYRS", layers);
+		bin.Process("INPC", [&](PVX::BinLoader& bin2) { outCount = bin2.read<int>(); });
 		bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
+		bin.Read("LYRS", layers);
 		bin.Execute();
-		auto rnn = new RecurrentLayer(
-			reinterpret_cast<NeuralLayer_Base*>(((char*)0) + layers[0]),
-			reinterpret_cast<RecurrentInput*>(((char*)0) + layers[1])
-		);
+		auto rnn = new RecurrentLayer(outCount);
+		rnn->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(((char*)0) + layers[0]);
+		rnn->RNN_Input = reinterpret_cast<RecurrentInput*>(((char*)0) + layers[1]);
 		if (Id>=0)rnn->Id = Id;
 		return rnn;
 	}
 
-	void RecurrentLayer::DNA(std::map<void*, WeightData>& Weights) {
-		PreviousLayer->DNA(Weights);
+	size_t RecurrentLayer::DNA(std::map<void*, WeightData>& Weights) {
+		return PreviousLayer->DNA(Weights);
 	}
 	void RecurrentLayer::BackPropagate(const netData& Gradient) {
 		PreviousLayer->BackPropagate(Gradient);
@@ -73,15 +82,13 @@ namespace PVX::DeepNeuralNets {
 	void RecurrentLayer::UpdateWeights() {
 		PreviousLayer->UpdateWeights();
 	}
-	void RecurrentLayer::SetLearnRate(float a) {
-		PreviousLayer->SetLearnRate(a);
+
+	RecurrentInput::RecurrentInput(int RecurrentNeurons, int nOut) : 
+		RecurrentNeuronCount{ RecurrentNeurons } 
+	{
+		PreviousLayer = nullptr;
+		output = netData::Zero(RecurrentNeurons + nOut + 1, 1);
 	}
-	void RecurrentLayer::ResetMomentum() {
-		PreviousLayer->ResetMomentum();
-	}
-
-
-
 	RecurrentInput::RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons) : RecurrentNeuronCount{ RecurrentNeurons } {
 		PreviousLayer = Input;
 		output = netData::Zero(RecurrentNeurons + Input->nOutput() + 1, 1);
@@ -109,15 +116,16 @@ namespace PVX::DeepNeuralNets {
 	RecurrentInput* RecurrentInput::Load2(PVX::BinLoader& bin) {
 		int Id = -1;
 		int RecurrentNeuronCount;
-		std::vector<int> layers;
-		bin.Read("LYRS", layers);
+		int outCount;
+		int layer = -1;
+		bin.Read("LYRS", layer);
 		bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
+		bin.Read("INPC", outCount);
 		bin.Read("RNNC", RecurrentNeuronCount);
 		bin.Execute();
-		auto rnn = new RecurrentInput(
-			reinterpret_cast<NeuralLayer_Base*>(((char*)0) + layers[0]),
-			RecurrentNeuronCount
-		);
+		auto* rnn = new RecurrentInput(RecurrentNeuronCount, outCount);
+		rnn->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(((char*)0) + layer);
+
 		if (Id>=0)rnn->Id = Id;
 		return rnn;
 	}
@@ -131,12 +139,15 @@ namespace PVX::DeepNeuralNets {
 		return output.block(0, Index, RecurrentNeuronCount, 1);
 	}
 	void RecurrentInput::FeedForward(int ver) {
-		PreviousLayer->FeedForward(ver);
-		const auto& prev = PreviousLayer->Output();
-		if (output.cols()!=prev.cols()) {
-			output = netData::Zero(prev.rows() + RecurrentNeuronCount, prev.cols());
+		if (ver>FeedVersion) {
+			FeedVersion = ver;
+			PreviousLayer->FeedForward(ver);
+			const auto& prev = PreviousLayer->Output();
+			if (output.cols()!=prev.cols()) {
+				output = netData::Zero(prev.rows() + RecurrentNeuronCount, prev.cols());
+			}
+			output.block(RecurrentNeuronCount, 0, prev.rows(), prev.cols()) = prev;
 		}
-		output.block(RecurrentNeuronCount, 0, prev.rows(), prev.cols()) = prev;
 	}
 	void RecurrentInput::FeedForward(int Index, int ver) {
 		FeedForward(ver);
@@ -145,8 +156,8 @@ namespace PVX::DeepNeuralNets {
 
 
 
-	void RecurrentInput::DNA(std::map<void*, WeightData>& Weights) {
-		PreviousLayer->DNA(Weights);
+	size_t RecurrentInput::DNA(std::map<void*, WeightData>& Weights) {
+		return PreviousLayer->DNA(Weights);
 	}
 	void RecurrentInput::BackPropagate(const netData& grad) {
 		PreviousLayer->BackPropagate(grad.block(RecurrentNeuronCount, 0, grad.rows()- RecurrentNeuronCount, grad.cols()));
@@ -156,11 +167,5 @@ namespace PVX::DeepNeuralNets {
 	}
 	void RecurrentInput::UpdateWeights() {
 		PreviousLayer->UpdateWeights();
-	}
-	void RecurrentInput::SetLearnRate(float a) {
-		PreviousLayer->SetLearnRate(a);
-	}
-	void RecurrentInput::ResetMomentum() {
-		PreviousLayer->ResetMomentum();
 	}
 }

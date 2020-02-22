@@ -45,9 +45,11 @@ namespace PVX {
 			return ret;
 		}
 
-		void NeuronCombiner::DNA(std::map<void*, WeightData>& Weights) {
+		size_t NeuronCombiner::DNA(std::map<void*, WeightData>& Weights) {
+			size_t ret = 0;
 			for (auto l : InputLayers)
-				l->DNA(Weights);
+				ret += l->DNA(Weights);
+			return ret;
 		}
 
 		NeuronCombiner::NeuronCombiner(const size_t inputs) {
@@ -120,16 +122,6 @@ namespace PVX {
 
 		size_t NeuronCombiner::nInput() const {
 			return output.rows() - 1;
-		}
-
-		void NeuronCombiner::SetLearnRate(float a) {
-			for (auto l : InputLayers)
-				l->SetLearnRate(a);
-		}
-
-		void NeuronCombiner::ResetMomentum() {
-			for (auto i : InputLayers)
-				i->ResetMomentum();
 		}
 	}
 }

@@ -168,14 +168,8 @@ namespace PVX {
 			return ret;
 		}
 
-		void ActivationLayer::DNA(std::map<void*, WeightData>& Weights) {
-			PreviousLayer->DNA(Weights);
-		}
-		void ActivationLayer::SetLearnRate(float a) {
-			PreviousLayer->SetLearnRate(a);
-		}
-		void ActivationLayer::ResetMomentum() {
-			PreviousLayer->ResetMomentum();
+		size_t ActivationLayer::DNA(std::map<void*, WeightData>& Weights) {
+			return PreviousLayer->DNA(Weights);
 		}
 		size_t ActivationLayer::nInput() const {
 			return nOutput();

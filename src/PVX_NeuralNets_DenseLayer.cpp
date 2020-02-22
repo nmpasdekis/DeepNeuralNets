@@ -59,7 +59,7 @@ namespace PVX {
 		////////////////////////////////////
 
 		void NeuronLayer::AdamF(const netData & Gradient) {
-			auto g1 = Gradient.array();
+			const auto& g1 = Gradient.array();
 			if (RMSprop.cols() != Gradient.cols())RMSprop = netData::Ones(Gradient.rows(), Gradient.cols());
 			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
 			netData gr = g1 / ((Eigen::sqrt(RMSprop.array()) + 1e-8));
@@ -207,14 +207,24 @@ namespace PVX {
 			_LearnRate = a;
 			PreviousLayer->SetLearnRate(a);
 		}
-		netData& NeuronLayer::GetWeights() {
-			return Weights;
+		void NeuronLayer::SetRMSprop(float Beta) {
+			_RMSprop = Beta;
+			_iRMSprop = 1.0 - Beta;
+			PreviousLayer->SetRMSprop(Beta);
+		}
+		void NeuronLayer::SetMomentum(float Beta) {
+			_Momentum = Beta;
+			_iMomentum = 1.0f - Beta;
+			PreviousLayer->SetMomentum(Beta);
 		}
 		void NeuronLayer::ResetMomentum() {
-			//tthis->RMSprop = netData::Zero(this->RMSprop.rows(), this->RMSprop.cols());
 			this->RMSprop = netData::Ones(this->RMSprop.rows(), this->RMSprop.cols());
 			this->DeltaWeights = netData::Zero(this->DeltaWeights.rows(), this->DeltaWeights.cols());
 			PreviousLayer->ResetMomentum();
+		}
+
+		netData& NeuronLayer::GetWeights() {
+			return Weights;
 		}
 		static int InitOpenMP = 0;
 
@@ -412,5 +422,15 @@ namespace PVX {
 			return Weights.cols() - 1;
 		}
 
+		size_t NeuronLayer::DNA(std::map<void*, WeightData>& w) {
+			if (!w.count(this)) {
+				WeightData ret;
+				ret.Weights = Weights.data();
+				ret.Count = Weights.size();
+				w[this] = ret;
+				return PreviousLayer->DNA(w) + ret.Count;
+			}
+			return 0;
+		}
 	}
 }
