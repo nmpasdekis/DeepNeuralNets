@@ -19,15 +19,15 @@ namespace PVX::DeepNeuralNets {
 				output(output.rows()-1, 0) = 1.0f;
 			}
 			for (int i = 0; i<bSize; i++) {
-				RNN_Input->output.block(0, i, RNN_Input->RecurrentNeuronCount, 1) = output.block(0, i, output.rows() - 1, 1);
+				RNN_Input->output.block(0, i, RNN_Input->RecurrentNeuronCount, 1) = output.block(0, (i + bSize - 1) % bSize, output.rows() - 1, 1);
 				PreviousLayer->FeedForward(i, Version);
-				output.col((i + 1) % bSize) = PreviousLayer->Output(i);
+				output.col(i) = PreviousLayer->Output(i);
 			}
 			output.row(output.rows()-1) = netData::Ones(1, bSize);
 		}
 	}
 	void RecurrentLayer::Reset() {
-		output.block(0, 0, output.rows()-1, 1) = netData::Zero(output.rows()-1, 1);
+		output.block(0, output.cols()-1, output.rows()-1, 1) = netData::Zero(output.rows()-1, 1);
 	}
 	void RecurrentLayer::FeedForward(int Index, int Version) {
 		throw "Unimplementable?";

@@ -36,15 +36,15 @@ int main() {
 	}
 	NetContainer Output(L"RNN.pvx");
 
-	Output.SetRMSprop(0.999);
-	Output.SetLearnRate(0.001f);
-	Output.SetMomentum(0.999);
+	Output.SetRMSprop(0.99);
+	Output.SetLearnRate(0.01f);
+	Output.SetMomentum(0.99);
 
 	std::vector<float> tmp;
 	float tmpError;
 
-	//auto Data = OneHot("PVX_Json.txt");
-	auto Data = OneHot2();
+	auto Data = OneHot("PVX_Json.txt");
+	//auto Data = OneHot2();
 	netData Res = netData::Zero(Data.rows(), Data.cols());
 	Res.block(0, 0, Res.rows()-1, Res.cols()) = Data.block(1, 0, Res.rows()-1, Res.cols());
 
@@ -53,23 +53,12 @@ int main() {
 	float BestError = err;
 	while (err > 1e-8) {
 		Output.ResetRNN();
-		err = Output.Train(Data, Res);
-		std::cout << err << "\n";
-		//err = 0.9f * err + 0.1f * Output.Train(Data, Res);
-		//Output.Save(L"RNN.pvx");
-		//if (err < BestError) {
-		//	Output.SaveCheckpoint();
-		//	BestError = err;
-		//}
+		err = 0.9f * err + 0.1f *  Output.Train(Data, Res);
+		std::cout << "\r" << (8.0f+log10(err)) << " " << err << "                ";
+
 		if (!((++Iter)%100)) {
 			Output.Save(L"RNN.pvx");
-			//tmpError = Output.SaveCheckpoint(tmp);
-			//Output.LoadCheckpoint();
-			//err = BestError;
-			//Output.Save(L"RNN.pvx");
-			//
-			//Output.LoadCheckpoint(tmp, tmpError);
-			std::cout << "Saved\n";
+			std::cout << "\n";
 		}
 	}
 
