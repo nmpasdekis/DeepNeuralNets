@@ -1,6 +1,7 @@
 #include <PVX_NeuralNetsCPU.h>
 #include "PVX_NeuralNets_Util.inl"
 
+
 namespace PVX::DeepNeuralNets {
 	NeuralLayer_Base* RecurrentLayer::newCopy(const std::map<NeuralLayer_Base*, size_t>& IndexOf) {
 		auto ret = new RecurrentLayer(

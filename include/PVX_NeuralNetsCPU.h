@@ -350,6 +350,7 @@ namespace PVX {
 			SoftMax,
 			StableSoftMax
 		};
+
 		class OutputLayer {
 		protected:
 			NeuralLayer_Base * LastLayer;
