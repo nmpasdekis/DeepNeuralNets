@@ -76,6 +76,7 @@ namespace PVX {
 			virtual void FeedForward(int) = 0;
 			virtual void FeedForward(int Index, int Version) = 0;
 			virtual void BackPropagate(const netData &) = 0;
+			virtual void BackPropagate(const netData& Gradient, int Index) = 0;
 			virtual size_t nInput() const = 0;
 			virtual void UpdateWeights() = 0;
 
@@ -83,6 +84,7 @@ namespace PVX {
 			netData Output();
 			inline auto Output(int i) {return output.col(i); }
 			netData RealOutput();
+			netData RealOutput(int);
 			size_t BatchSize() const;
 
 			static float LearnRate();
@@ -122,6 +124,7 @@ namespace PVX {
 			void FeedForward(int) {}
 			void FeedForward(int, int) {}
 			void BackPropagate(const netData & Gradient) {}
+			void BackPropagate(const netData& Gradient, int Index) {};
 			void UpdateWeights() {};
 			size_t nInput() const;
 
@@ -192,7 +195,8 @@ namespace PVX {
 
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
-			void BackPropagate(const netData & TrainData);
+			void BackPropagate(const netData& Gradient);
+			void BackPropagate(const netData & Gradient, int Index);
 			void UpdateWeights();
 
 			size_t DNA(std::map<void*, WeightData> & Weights);
@@ -223,7 +227,8 @@ namespace PVX {
 
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
-			void BackPropagate(const netData& TrainData);
+			void BackPropagate(const netData& Gradient);
+			void BackPropagate(const netData& Gradient, int Index);
 			void UpdateWeights();
 			size_t DNA(std::map<void*, WeightData>& Weights);
 
@@ -246,6 +251,7 @@ namespace PVX {
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
+			void BackPropagate(const netData& Gradient, int Index);
 			void UpdateWeights();
 			size_t nInput() const;
 		};
@@ -264,6 +270,7 @@ namespace PVX {
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData & Gradient);
+			void BackPropagate(const netData& Gradient, int Index);
 			void UpdateWeights();
 			size_t nInput() const;
 		};
@@ -281,7 +288,8 @@ namespace PVX {
 			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int Version);
 			void FeedForward(int Index, int Version);
-			void BackPropagate(const netData & Gradient);
+			void BackPropagate(const netData& Gradient);
+			void BackPropagate(const netData& Gradient, int Index);
 			void UpdateWeights();
 			size_t nInput() const;
 		};
@@ -302,12 +310,16 @@ namespace PVX {
 			//void FeedIndex(int i);
 			Eigen::Block<netData, -1, -1, false> Recur(int Index);
 			RecurrentInput(int Size, int nOut);
+			netData gradient;
+			void BackPropagate();
+			void ZeroGradient(int cols);
 		public:
 			RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons);
 			size_t DNA(std::map<void*, WeightData>& Weights);
 			void FeedForward(int);
 			void FeedForward(int Index, int Version);
 			void BackPropagate(const netData&);
+			void BackPropagate(const netData&,int);
 			size_t nInput() const;
 			void UpdateWeights();
 		};
@@ -327,6 +339,7 @@ namespace PVX {
 			void FeedForward(int);
 			void FeedForward(int,int);
 			void BackPropagate(const netData&);
+			void BackPropagate(const netData&, int);
 			size_t nInput() const;
 			void UpdateWeights();
 

@@ -116,6 +116,14 @@ namespace PVX {
 			}
 		}
 
+		void NeuronCombiner::BackPropagate(const netData& Gradient, int Index) {
+			size_t Start = 0;
+			for (auto i : InputLayers) {
+				i->BackPropagate(Gradient.block(Start, Index, i->nOutput(), 1), Index);
+				Start += i->nOutput();
+			}
+		}
+
 		void NeuronCombiner::UpdateWeights() {
 			for (auto i: InputLayers) i->UpdateWeights();
 		}

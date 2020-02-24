@@ -25,6 +25,9 @@ namespace PVX::DeepNeuralNets {
 	netData NeuralLayer_Base::RealOutput() {
 		return outPart(output);
 	}
+	netData NeuralLayer_Base::RealOutput(int Index) {
+		return outPart(output, Index);
+	}
 	float NeuralLayer_Base::LearnRate() {
 		return __LearnRate;
 	}

@@ -11,11 +11,11 @@ netData OneHot2();
 
 
 int main() {
-	if(false)
+	if(true)
 	{
-		NeuralLayer_Base::LearnRate(0.001f);
-		NeuralLayer_Base::RMSprop(0.9f);
-		NeuralLayer_Base::Momentum(0.9f);
+		NeuralLayer_Base::LearnRate(0.01f);
+		NeuralLayer_Base::RMSprop(0.99f);
+		NeuralLayer_Base::Momentum(0.99f);
 
 		InputLayer Input("Input", 128);
 
@@ -23,10 +23,10 @@ int main() {
 		RecurrentInput rnnIbput(&Dense0, 32);
 
 		NeuronLayer Dense1(&rnnIbput, 32);
-		NeuronLayer Dense2(&Dense1, 32);
-		NeuronLayer Dense3(&Dense2, 32, LayerActivation::Tanh);
+		//NeuronLayer Dense2(&Dense1, 32);
+		//NeuronLayer Dense3(&Dense2, 32);
 
-		RecurrentLayer Recurrent(&Dense3, &rnnIbput);
+		RecurrentLayer Recurrent(&Dense1, &rnnIbput);
 
 		NeuronLayer Dense4(&Recurrent, 128);
 
@@ -36,15 +36,19 @@ int main() {
 	}
 	NetContainer Output(L"RNN.pvx");
 
-	Output.SetRMSprop(0.99);
-	Output.SetLearnRate(0.01f);
-	Output.SetMomentum(0.99);
+	Output.SetRMSprop(0.999);
+	Output.SetLearnRate(0.1f);
+	Output.SetMomentum(0.999);
+
+	auto dna = Output.GetDNA();
 
 	std::vector<float> tmp;
 	float tmpError;
 
 	auto Data = OneHot("PVX_Json.txt");
 	//auto Data = OneHot2();
+
+
 	netData Res = netData::Zero(Data.rows(), Data.cols());
 	Res.block(0, 0, Res.rows()-1, Res.cols()) = Data.block(1, 0, Res.rows()-1, Res.cols());
 
@@ -55,6 +59,14 @@ int main() {
 		Output.ResetRNN();
 		err = 0.9f * err + 0.1f *  Output.Train(Data, Res);
 		std::cout << "\r" << (8.0f+log10(err)) << " " << err << "                ";
+
+		//if (err < BestError) {
+		//	Output.SaveCheckpoint();
+		//	BestError = err;
+		//} else if ((err / BestError) > 1.00001f) {
+		//	Output.ResetMomentum();
+		//	std::cout << "\nReset\n";
+		//}
 
 		if (!((++Iter)%100)) {
 			Output.Save(L"RNN.pvx");

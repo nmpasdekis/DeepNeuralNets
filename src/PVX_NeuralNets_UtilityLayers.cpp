@@ -114,6 +114,9 @@ namespace PVX {
 		void NeuronAdder::BackPropagate(const netData & Gradient) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient);
 		}
+		void NeuronAdder::BackPropagate(const netData& Gradient, int Index) {
+			for (auto i : InputLayers) i->BackPropagate(Gradient, Index);
+		}
 		void NeuronAdder::UpdateWeights() {
 			for (auto i: InputLayers) i->UpdateWeights();
 		}
@@ -236,6 +239,23 @@ namespace PVX {
 				InputLayers[j]->BackPropagate(Gradient.array() * tmp);
 			}
 		}
+		void NeuronMultiplier::BackPropagate(const netData& Gradient, int Index) {
+			{
+				auto tmp = InputLayers[1]->RealOutput(Index).array();
+				for (auto i = 2; i < InputLayers.size(); i++) {
+					tmp *= InputLayers[i]->RealOutput(Index).array();
+				}
+				InputLayers[0]->BackPropagate(Gradient.array() * tmp, Index);
+			}
+			for (int j = 1; j < InputLayers.size(); j++) {
+				auto tmp = InputLayers[0]->RealOutput(Index).array();
+				for (int i = 1; i < InputLayers.size(); i++)
+					if (i != j)
+						tmp *= InputLayers[i]->RealOutput(Index).array();
+				InputLayers[j]->BackPropagate(Gradient.array() * tmp, Index);
+			}
+		}
+
 		void NeuronMultiplier::UpdateWeights() {
 			for (auto i: InputLayers) i->UpdateWeights();
 		}

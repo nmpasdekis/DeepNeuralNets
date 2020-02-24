@@ -75,7 +75,19 @@ namespace PVX::DeepNeuralNets {
 		return PreviousLayer->DNA(Weights);
 	}
 	void RecurrentLayer::BackPropagate(const netData& Gradient) {
-		PreviousLayer->BackPropagate(Gradient);
+		RNN_Input->ZeroGradient(Gradient.cols());
+		netData grad = Gradient;
+		int64_t i = Gradient.cols() - 1;
+		PreviousLayer->BackPropagate(grad.col(i), i);
+		i--;
+		for (; i>=0; i--) {
+			grad.col(i) += RNN_Input->gradient.block(0, i + 1, grad.rows(), 1);
+			PreviousLayer->BackPropagate(grad.col(i), i);
+		}
+		RNN_Input->BackPropagate();
+	}
+	void RecurrentLayer::BackPropagate(const netData&, int) {
+		throw "Unimplementable?";
 	}
 	size_t RecurrentLayer::nInput() const {
 		return PreviousLayer->nInput();
@@ -160,8 +172,22 @@ namespace PVX::DeepNeuralNets {
 	size_t RecurrentInput::DNA(std::map<void*, WeightData>& Weights) {
 		return PreviousLayer->DNA(Weights);
 	}
+	void RecurrentInput::BackPropagate() {
+		PreviousLayer->BackPropagate(gradient.block(RecurrentNeuronCount, 0, gradient.rows()- RecurrentNeuronCount, gradient.cols()));
+	}
+	void RecurrentInput::ZeroGradient(int cols) {
+		if ((PreviousLayer->nOutput() + RecurrentNeuronCount)!= gradient.rows() || gradient.cols()!=cols) {
+			gradient = netData::Zero(PreviousLayer->nOutput() + RecurrentNeuronCount, cols);
+		} else {
+			memset(gradient.data(), 0, sizeof(float) * gradient.cols() * gradient.rows());
+		}
+	}
 	void RecurrentInput::BackPropagate(const netData& grad) {
-		PreviousLayer->BackPropagate(grad.block(RecurrentNeuronCount, 0, grad.rows()- RecurrentNeuronCount, grad.cols()));
+		throw "Unimplementable?";
+		//PreviousLayer->BackPropagate(grad.block(RecurrentNeuronCount, 0, grad.rows()- RecurrentNeuronCount, grad.cols()));
+	}
+	void RecurrentInput::BackPropagate(const netData& grad, int Index) {
+		gradient.col(Index) += grad;
 	}
 	size_t RecurrentInput::nInput() const {
 		return output.rows() - 1;

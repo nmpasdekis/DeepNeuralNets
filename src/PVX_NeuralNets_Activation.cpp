@@ -133,6 +133,11 @@ namespace PVX {
 			PreviousLayer->BackPropagate(grad);
 		}
 
+		void ActivationLayer::BackPropagate(const netData& Gradient, int Index) {
+			netData grad = Gradient.array() * Derivative(outPart(output, Index)).array();
+			PreviousLayer->BackPropagate(grad, Index);
+		}
+
 		void ActivationLayer::UpdateWeights() {
 			PreviousLayer->UpdateWeights();
 		}

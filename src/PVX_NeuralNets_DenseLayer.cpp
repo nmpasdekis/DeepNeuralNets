@@ -413,6 +413,17 @@ namespace PVX {
 			//(this->*updateWeights)(grad);
 		}
 
+		void NeuronLayer::BackPropagate(const netData& Gradient, int Index) {
+			netData grad = Gradient.array() * Derivative(outPart(output, Index)).array();
+			netData prop = Weights.transpose() * grad;
+			PreviousLayer->BackPropagate(outPart(prop), Index);
+			if (curGradient.cols()!=grad.cols()) {
+				curGradient.resizeLike(grad);
+				memset(curGradient.data(), 0, sizeof(float) * curGradient.size());
+			}
+			curGradient += grad;
+		}
+
 		void NeuronLayer::UpdateWeights() {
 			(this->*updateWeights)(curGradient);
 			memset(curGradient.data(), 0, sizeof(float) * curGradient.size());
