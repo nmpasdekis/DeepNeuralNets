@@ -67,6 +67,20 @@ namespace PVX {
 			DeltaWeights = (gr * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
 			Weights += DeltaWeights;
 		}
+		void NeuronLayer::Adam_WeightDecayF(const netData& Gradient) {
+			auto g1 = Gradient.array();
+			if (RMSprop.cols() != Gradient.cols())RMSprop = netData::Ones(Gradient.rows(), Gradient.cols());
+			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
+			netData gr = g1 / ((Eigen::sqrt(RMSprop.array()) + 1e-8));
+
+			DeltaWeights = (gr * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Weights.size()) + DeltaWeights;
+
+			//DeltaWeights = (gr * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
+			//Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + DeltaWeights;
+		}
+
+
 		void NeuronLayer::MomentumF(const netData & Gradient) {
 			DeltaWeights = (Gradient * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
 			Weights += DeltaWeights;
@@ -92,20 +106,9 @@ namespace PVX {
 
 			Weights += (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
-
-
-		void NeuronLayer::Adam_WeightDecayF(const netData& Gradient) {
-			auto g1 = Gradient.array();
-			if (RMSprop.cols() != Gradient.cols())RMSprop = netData::Ones(Gradient.rows(), Gradient.cols());
-			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
-			netData gr = g1 / ((Eigen::sqrt(RMSprop.array()) + 1e-8));
-
-			DeltaWeights = (gr * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
-			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + DeltaWeights;
-		}
 		void NeuronLayer::Momentum_WeightDecayF(const netData& Gradient) {
 			DeltaWeights = (Gradient * PreviousLayer->Output().transpose() * (_LearnRate * _iMomentum)) + DeltaWeights * _Momentum;
-			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + DeltaWeights;
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Weights.size()) + DeltaWeights;
 		}
 		void NeuronLayer::RMSprop_WeightDecayF(const netData& Gradient) {
 			auto g1 = Gradient.array();
@@ -114,10 +117,10 @@ namespace PVX {
 			RMSprop = _RMSprop * RMSprop.array() + _iRMSprop * (g1*g1);
 			netData gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
 
-			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + (gr * PreviousLayer->Output().transpose() * _LearnRate);
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Weights.size()) + (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
 		void NeuronLayer::Sgd_WeightDecayF(const netData& Gradient) {
-			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + (Gradient * PreviousLayer->Output().transpose() * _LearnRate);
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Weights.size()) + (Gradient * PreviousLayer->Output().transpose() * _LearnRate);
 		}
 		void NeuronLayer::AdaGrad_WeightDecayF(const netData& Gradient) {
 			auto g1 = Gradient.array();
@@ -126,7 +129,7 @@ namespace PVX {
 			RMSprop = RMSprop.array() + (g1*g1);
 			netData gr = g1 / (Eigen::sqrt(RMSprop.array()) + 1e-8);
 
-			Weights = Weights * (1.0f - _LearnRate * _L2 / Gradient.cols()) + (gr * PreviousLayer->Output().transpose() * _LearnRate);
+			Weights = Weights * (1.0f - _LearnRate * _L2 / Weights.size()) + (gr * PreviousLayer->Output().transpose() * _LearnRate);
 		}
 
 		////////////////////////////////////
@@ -165,7 +168,7 @@ namespace PVX {
 			bin.Read("DRPT", drop);
 			bin.Read("ACTV", act);
 			bin.Read("TRNS", train);
-			bin.Read("L2RG", l2);
+			//bin.Read("L2RG", l2);
 			bin.Read("INPT", prev);
 			bin.Read("NAME", Name);
 			bin.Process("NDID", [&](PVX::BinLoader& bin2) { Id = bin2.read<int>(); });
@@ -182,7 +185,7 @@ namespace PVX {
 				ret->_LearnRate = rate;
 				ret->_RMSprop = rms;
 				ret->_iRMSprop = 1.0f - rms;
-				ret->_L2 = l2;
+				ret->_L2 = __L2;
 			}
 			ret->PreviousLayer = reinterpret_cast<NeuralLayer_Base*>(((char*)0) + prev);// (NeuralLayer_Base*)prev;
 			return ret;

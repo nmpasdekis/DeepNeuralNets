@@ -146,15 +146,16 @@ namespace PVX {
 			bin.Begin("ACTV");
 			{
 				bin.Write("NDID", int(Id));
-				bin.Write("OUTC", nOutput());
 				bin.Write("ACTV", int(activation));
+				bin.Write("OUTC", nOutput());
 				bin.Write("INPT", IndexOf.at(PreviousLayer));
 			}
 			bin.End();
 		}
 
 		ActivationLayer* ActivationLayer::Load2(PVX::BinLoader& bin) {
-			int outc, act, prev, Id = -1;
+			int act, Id = -1;
+			size_t outc, prev;
 			bin.Read("OUTC", outc);
 			bin.Read("ACTV", act);
 			bin.Read("INPT", prev);

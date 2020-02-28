@@ -99,10 +99,10 @@
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)eigen-eigen-323c052e1731;$(SolutionDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\eigen-eigen-323c052e1731;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)eigen-eigen-323c052e1731;$(SolutionDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\eigen-eigen-323c052e1731;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

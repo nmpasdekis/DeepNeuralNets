@@ -212,6 +212,32 @@ namespace PVX::DeepNeuralNets {
 		FeedForward();
 		return TrainFnc(outp);
 	}
+
+	float NetContainer::Train(const netData& inp, const netData& outp, size_t BatchSize) {
+		float Error = 0;
+		size_t cur = 0;
+		size_t rowsI = inp.rows();
+		size_t rowsO = outp.rows();
+		while (cur < inp.cols()) {
+			size_t cols = std::min(inp.cols() - cur, BatchSize);
+			Error += cols * Train(inp.block(0, cur, rowsI, cols), outp.block(0, cur, rowsO, cols));
+			cur += BatchSize;
+		}
+		return Error / inp.cols();
+	}
+	float NetContainer::TrainRaw(const netData& inp, const netData& outp, size_t BatchSize) {
+		float Error = 0;
+		size_t cur = 0;
+		size_t rowsI = inp.rows();
+		size_t rowsO = outp.rows();
+		while (cur < inp.cols()) {
+			size_t cols = std::min(inp.cols() - cur, BatchSize);
+			Error += cols * TrainRaw(inp.block(0, cur, rowsI, cols), outp.block(0, cur, rowsO, cols));
+			cur += BatchSize;
+		}
+		return Error / inp.cols();
+	}
+
 	float NetContainer::Train(const std::vector<netData>& inp, const netData& outp) {
 		for (auto i = 0; i<inp.size(); i++)
 			Inputs[i]->Input(inp[i]);

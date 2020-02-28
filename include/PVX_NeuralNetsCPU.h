@@ -328,6 +328,7 @@ namespace PVX {
 		protected:
 			friend class NeuralNetContainer;
 			friend class NetContainer;
+			friend class RecurrentUtility;
 			void Save(PVX::BinSaver& bin, const std::map<NeuralLayer_Base*, size_t>& IndexOf) const;
 			NeuralLayer_Base* newCopy(const std::map<NeuralLayer_Base*, size_t>& IndexOf);
 			RecurrentInput* RNN_Input;
@@ -406,6 +407,15 @@ namespace PVX {
 			void ResetMomentum();
 
 			NetDNA GetDNA();
+		};
+
+		class RecurrentUtility {
+			RecurrentInput Input;
+			NeuronLayer State;
+			RecurrentLayer Layer;
+		public:
+			RecurrentUtility(NeuralLayer_Base* inp, int OutSize, LayerActivation Activate = LayerActivation::ReLU, TrainScheme Train = TrainScheme::Adam);
+			operator NeuralLayer_Base* () { return &Layer; }
 		};
 
 		class ResNetUtility {
@@ -492,6 +502,9 @@ namespace PVX {
 			float TrainRaw(const netData& inp, const netData& outp);
 			float Train(const std::vector<netData>& inp, const netData& outp);
 			float TrainRaw(const std::vector<netData>& inp, const netData& outp);
+
+			float Train(const netData& inp, const netData& outp, size_t BatchSize);
+			float TrainRaw(const netData& inp, const netData& outp, size_t BatchSize);
 
 			float Error(const netData& inp, const netData& outp) const;
 			float ErrorRaw(const netData& inp, const netData& outp) const;

@@ -195,4 +195,11 @@ namespace PVX::DeepNeuralNets {
 	void RecurrentInput::UpdateWeights() {
 		PreviousLayer->UpdateWeights();
 	}
+
+
+	RecurrentUtility::RecurrentUtility(NeuralLayer_Base* inp, int OutSize, LayerActivation Activate, TrainScheme Train) :
+		Input(inp, OutSize),
+		State(&Input, OutSize, Activate, Train),
+		Layer(&State, &Input)
+	{}
 }

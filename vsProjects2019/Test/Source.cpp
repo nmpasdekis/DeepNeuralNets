@@ -11,7 +11,7 @@ netData OneHot2();
 
 
 int main() {
-	if(true)
+	if(false)
 	{
 		NeuralLayer_Base::LearnRate(0.01f);
 		NeuralLayer_Base::RMSprop(0.99f);
@@ -19,10 +19,10 @@ int main() {
 
 		InputLayer Input("Input", 128);
 
-		NeuronLayer Dense0(&Input, 32);
-		RecurrentInput rnnIbput(&Dense0, 32);
+		NeuronLayer Dense0(&Input, 128);
+		RecurrentInput rnnIbput(&Dense0, 128);
 
-		NeuronLayer Dense1(&rnnIbput, 32);
+		NeuronLayer Dense1(&rnnIbput, 128);
 		//NeuronLayer Dense2(&Dense1, 32);
 		//NeuronLayer Dense3(&Dense2, 32);
 
@@ -34,11 +34,12 @@ int main() {
 
 		Output.Save(L"RNN.pvx");
 	}
+	NeuralLayer_Base::L2Regularization(0.001);
 	NetContainer Output(L"RNN.pvx");
 
-	Output.SetRMSprop(0.999);
-	Output.SetLearnRate(0.1f);
-	Output.SetMomentum(0.999);
+	Output.SetRMSprop(0.9999);
+	Output.SetLearnRate(0.9f);
+	Output.SetMomentum(0.9999);
 
 	auto dna = Output.GetDNA();
 
@@ -57,7 +58,7 @@ int main() {
 	float BestError = err;
 	while (err > 1e-8) {
 		Output.ResetRNN();
-		err = 0.9f * err + 0.1f *  Output.Train(Data, Res);
+		err = 0.9f * err + 0.1f *  Output.Train(Data, Res, 100);
 		std::cout << "\r" << (8.0f+log10(err)) << " " << err << "                ";
 
 		//if (err < BestError) {
