@@ -61,7 +61,7 @@ namespace PVX {
 				ret += l->DNA(Weights);
 			return ret;
 		}
-		//void NeuronAdder::FeedForward(int Version) {
+		//void NeuronAdder::FeedForward(int64_t Version) {
 		//	if (Version > FeedVersion) {
 		//		InputLayers[0]->FeedForward(Version);
 		//		const auto& inp = PreviousLayer->Output();
@@ -77,7 +77,7 @@ namespace PVX {
 		//	}
 		//}
 
-		void NeuronAdder::FeedForward(int Version) {
+		void NeuronAdder::FeedForward(int64_t Version) {
 			if (Version > FeedVersion) {
 				InputLayers[0]->FeedForward(Version);
 				output = InputLayers[0]->Output();
@@ -90,7 +90,7 @@ namespace PVX {
 				FeedIndexVersion = output.cols();
 			}
 		}
-		void NeuronAdder::FeedForward(int Index, int Version) {
+		void NeuronAdder::FeedForward(int64_t Index, int64_t Version) {
 			if (Version > FeedVersion) {
 				FeedVersion = Version;
 				FeedIndexVersion = -1;
@@ -114,7 +114,7 @@ namespace PVX {
 		void NeuronAdder::BackPropagate(const netData & Gradient) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient);
 		}
-		void NeuronAdder::BackPropagate(const netData& Gradient, int Index) {
+		void NeuronAdder::BackPropagate(const netData& Gradient, int64_t Index) {
 			for (auto i : InputLayers) i->BackPropagate(Gradient, Index);
 		}
 		void NeuronAdder::UpdateWeights() {
@@ -176,7 +176,7 @@ namespace PVX {
 				ret += l->DNA(Weights);
 			return ret;
 		}
-		//void NeuronMultiplier::FeedForward(int Version) {
+		//void NeuronMultiplier::FeedForward(int64_t Version) {
 		//	if (Version > FeedVersion) {
 		//		InputLayers[0]->FeedForward(Version);
 		//		auto tmp = InputLayers[0]->Output().array();
@@ -190,7 +190,7 @@ namespace PVX {
 		//	}
 		//}
 
-		void NeuronMultiplier::FeedForward(int Version) {
+		void NeuronMultiplier::FeedForward(int64_t Version) {
 			if (Version > FeedVersion) {
 				InputLayers[0]->FeedForward(Version);
 				output = InputLayers[0]->Output();
@@ -202,7 +202,7 @@ namespace PVX {
 				FeedIndexVersion = output.cols();
 			}
 		}
-		void NeuronMultiplier::FeedForward(int Index, int Version) {
+		void NeuronMultiplier::FeedForward(int64_t Index, int64_t Version) {
 			if (Version > FeedVersion) {
 				FeedVersion = Version;
 				FeedIndexVersion = -1;
@@ -239,7 +239,7 @@ namespace PVX {
 				InputLayers[j]->BackPropagate(Gradient.array() * tmp);
 			}
 		}
-		void NeuronMultiplier::BackPropagate(const netData& Gradient, int Index) {
+		void NeuronMultiplier::BackPropagate(const netData& Gradient, int64_t Index) {
 			{
 				auto tmp = InputLayers[1]->RealOutput(Index).array();
 				for (auto i = 2; i < InputLayers.size(); i++) {

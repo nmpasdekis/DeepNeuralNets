@@ -1,4 +1,4 @@
-#include <PVX_GenericSolvers.h>
+#include <PVX_Solvers.h>
 #include <iostream>
 #include <limits>
 

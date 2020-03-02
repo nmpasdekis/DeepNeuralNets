@@ -61,7 +61,7 @@ namespace PVX {
 			for (auto& i:inputs)InputLayers.push_back(i);
 			output = makeComb(inputs);
 		}
-		void NeuronCombiner::FeedForward(int Version) {
+		void NeuronCombiner::FeedForward(int64_t Version) {
 			if (Version > FeedVersion) {
 				InputLayers[0]->FeedForward(Version);
 				size_t Start = 0;
@@ -82,7 +82,7 @@ namespace PVX {
 				FeedVersion = Version;
 			}
 		}
-		void NeuronCombiner::FeedForward(int Index, int Version) {
+		void NeuronCombiner::FeedForward(int64_t Index, int64_t Version) {
 			if (Version > FeedVersion) {
 				FeedVersion = Version;
 				FeedIndexVersion = -1;
@@ -116,7 +116,7 @@ namespace PVX {
 			}
 		}
 
-		void NeuronCombiner::BackPropagate(const netData& Gradient, int Index) {
+		void NeuronCombiner::BackPropagate(const netData& Gradient, int64_t Index) {
 			size_t Start = 0;
 			for (auto i : InputLayers) {
 				i->BackPropagate(Gradient.block(Start, Index, i->nOutput(), 1), Index);

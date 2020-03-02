@@ -218,7 +218,7 @@ namespace PVX::DeepNeuralNets {
 		size_t cur = 0;
 		size_t rowsI = inp.rows();
 		size_t rowsO = outp.rows();
-		while (cur < inp.cols()) {
+		while (cur < size_t(inp.cols())) {
 			size_t cols = std::min(inp.cols() - cur, BatchSize);
 			Error += cols * Train(inp.block(0, cur, rowsI, cols), outp.block(0, cur, rowsO, cols));
 			cur += BatchSize;
@@ -230,7 +230,7 @@ namespace PVX::DeepNeuralNets {
 		size_t cur = 0;
 		size_t rowsI = inp.rows();
 		size_t rowsO = outp.rows();
-		while (cur < inp.cols()) {
+		while (cur < size_t(inp.cols())) {
 			size_t cols = std::min(inp.cols() - cur, BatchSize);
 			Error += cols * TrainRaw(inp.block(0, cur, rowsI, cols), outp.block(0, cur, rowsO, cols));
 			cur += BatchSize;
@@ -249,6 +249,35 @@ namespace PVX::DeepNeuralNets {
 			Inputs[i]->InputRaw(inp[i]);
 		FeedForward();
 		return TrainFnc(outp);
+	}
+
+	float NetContainer::Error(const netData& inp, const netData& outp, size_t BatchSize) const {
+		float Error = 0;
+		size_t cur = 0;
+		size_t rowsI = inp.rows();
+		size_t rowsO = outp.rows();
+		while (cur < size_t(inp.cols())) {
+			size_t cols = std::min(inp.cols() - cur, BatchSize);
+			Inputs[0]->Input(inp.block(0, cur, rowsI, cols));
+			FeedForward();
+			Error += cols * GetErrorFnc(outp.block(0, cur, rowsO, cols));
+			cur += BatchSize;
+		}
+		return Error / inp.cols();
+	}
+	float NetContainer::ErrorRaw(const netData& inp, const netData& outp, size_t BatchSize) const {
+		float Error = 0;
+		size_t cur = 0;
+		size_t rowsI = inp.rows();
+		size_t rowsO = outp.rows();
+		while (cur < size_t(inp.cols())) {
+			size_t cols = std::min(inp.cols() - cur, BatchSize);
+			Inputs[0]->InputRaw(inp.block(0, cur, rowsI, cols));
+			FeedForward();
+			Error += cols * GetErrorFnc(outp.block(0, cur, rowsO, cols));
+			cur += BatchSize;
+		}
+		return Error / inp.cols();
 	}
 
 	float NetContainer::Error(const netData& inp, const netData& outp) const {
@@ -307,21 +336,32 @@ namespace PVX::DeepNeuralNets {
 	void NetContainer::FeedForwardSoftMax() {
 		LastLayer->FeedForward(++Version);
 		auto tmp2 = LastLayer->Output();
+
+		CorrectMat(tmp2);
+
 		netData tmp = Eigen::exp(outPart(tmp2).array());
+		CorrectMat(tmp);
+
 		netData a = 1.0f / (netData::Ones(1, tmp.rows()) * tmp).array();
+		CorrectMat(a);
 		netData div = Eigen::Map<Eigen::RowVectorXf>(a.data(), a.size()).asDiagonal();
+		CorrectMat(div);
 		output = (tmp * div);
+		CorrectMat(output);
 	}
 	void NetContainer::FeedForwardStableSoftMax() {
 		LastLayer->FeedForward(++Version);
 		netData tmp = LastLayer->Output();
 		output = outPart(tmp);
+		CorrectMat(output);
 
 		for (auto i = 0; i < output.cols(); i++) {
 			auto r = output.col(i);
 			r -= netData::Constant(r.rows(), 1, r.maxCoeff());
 			r = Eigen::exp(r.array());
 			r *= 1.0f / r.sum();
+
+			CorrectMat(r);
 		}
 	}
 	
@@ -336,17 +376,17 @@ namespace PVX::DeepNeuralNets {
 	}
 	float NetContainer::Iterate() {
 		if (tmpOrder.size()<TrainOrder.size()) {
-			size_t i;
-			for (i = 0; i<tmpOrder.size() && curIteration<TrainOrder.size(); i++, curIteration++) {
+			int64_t i;
+			for (i = 0; i<int64_t(tmpOrder.size()) && curIteration<int64_t(TrainOrder.size()); i++, curIteration++) {
 				tmpOrder[i] = TrainOrder[curIteration];
 			}
-			if (i<tmpOrder.size()) {
+			if (i<int64_t(tmpOrder.size())) {
 				std::random_device rd;
 				std::mt19937 g(rd());
 				std::shuffle(TrainOrder.begin(), TrainOrder.end(), g);
 				curIteration = 0;
 
-				for (; i<tmpOrder.size() && curIteration<TrainOrder.size(); i++, curIteration++) {
+				for (; i<int64_t(tmpOrder.size()) && curIteration<int64_t(TrainOrder.size()); i++, curIteration++) {
 					tmpOrder[i] = TrainOrder[curIteration];
 				}
 			}

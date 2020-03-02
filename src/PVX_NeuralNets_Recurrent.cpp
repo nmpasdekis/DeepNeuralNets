@@ -11,15 +11,15 @@ namespace PVX::DeepNeuralNets {
 		ret->Id = Id;
 		return ret;
 	}
-	void RecurrentLayer::FeedForward(int Version) {
+	void RecurrentLayer::FeedForward(int64_t Version) {
 		if (Version > FeedVersion) {
 			RNN_Input->FeedForward(Version);
-			int bSize = RNN_Input->BatchSize();
+			int64_t bSize = RNN_Input->BatchSize();
 			if (output.cols() != bSize) {
 				output = netData::Zero(output.rows(), bSize);
 				output(output.rows()-1, 0) = 1.0f;
 			}
-			for (int i = 0; i<bSize; i++) {
+			for (int64_t i = 0; i<bSize; i++) {
 				RNN_Input->output.block(0, i, RNN_Input->RecurrentNeuronCount, 1) = output.block(0, (i + bSize - 1) % bSize, output.rows() - 1, 1);
 				PreviousLayer->FeedForward(i, Version);
 				output.col(i) = PreviousLayer->Output(i);
@@ -30,11 +30,11 @@ namespace PVX::DeepNeuralNets {
 	void RecurrentLayer::Reset() {
 		output.block(0, output.cols()-1, output.rows()-1, 1) = netData::Zero(output.rows()-1, 1);
 	}
-	void RecurrentLayer::FeedForward(int Index, int Version) {
+	void RecurrentLayer::FeedForward(int64_t Index, int64_t Version) {
 		throw "Unimplementable?";
 	}
 
-	RecurrentLayer::RecurrentLayer(int outCount) {
+	RecurrentLayer::RecurrentLayer(int64_t outCount) {
 		output = netData::Ones(outCount, 1);
 	}
 
@@ -86,7 +86,7 @@ namespace PVX::DeepNeuralNets {
 		}
 		RNN_Input->BackPropagate();
 	}
-	void RecurrentLayer::BackPropagate(const netData&, int) {
+	void RecurrentLayer::BackPropagate(const netData&, int64_t) {
 		throw "Unimplementable?";
 	}
 	size_t RecurrentLayer::nInput() const {
@@ -96,13 +96,13 @@ namespace PVX::DeepNeuralNets {
 		PreviousLayer->UpdateWeights();
 	}
 
-	RecurrentInput::RecurrentInput(int RecurrentNeurons, int nOut) : 
+	RecurrentInput::RecurrentInput(int64_t RecurrentNeurons, int64_t nOut) :
 		RecurrentNeuronCount{ RecurrentNeurons } 
 	{
 		PreviousLayer = nullptr;
 		output = netData::Zero(RecurrentNeurons + nOut + 1, 1);
 	}
-	RecurrentInput::RecurrentInput(NeuralLayer_Base* Input, int RecurrentNeurons) : RecurrentNeuronCount{ RecurrentNeurons } {
+	RecurrentInput::RecurrentInput(NeuralLayer_Base* Input, int64_t RecurrentNeurons) : RecurrentNeuronCount{ RecurrentNeurons } {
 		PreviousLayer = Input;
 		output = netData::Zero(RecurrentNeurons + Input->nOutput() + 1, 1);
 	}
@@ -148,10 +148,10 @@ namespace PVX::DeepNeuralNets {
 	//void RecurrentInput::FeedIndex(int i) {
 	//	output.block(RecurrentNeuronCount, 0, rnnData.rows(), 1) = rnnData.col(i);
 	//}
-	Eigen::Block<netData, -1, -1, false> RecurrentInput::Recur(int Index) {
+	Eigen::Block<netData, -1, -1, false> RecurrentInput::Recur(int64_t Index) {
 		return output.block(0, Index, RecurrentNeuronCount, 1);
 	}
-	void RecurrentInput::FeedForward(int ver) {
+	void RecurrentInput::FeedForward(int64_t ver) {
 		if (ver>FeedVersion) {
 			FeedVersion = ver;
 			PreviousLayer->FeedForward(ver);
@@ -162,7 +162,7 @@ namespace PVX::DeepNeuralNets {
 			output.block(RecurrentNeuronCount, 0, prev.rows(), prev.cols()) = prev;
 		}
 	}
-	void RecurrentInput::FeedForward(int Index, int ver) {
+	void RecurrentInput::FeedForward(int64_t Index, int64_t ver) {
 		FeedForward(ver);
 	}
 
@@ -175,7 +175,7 @@ namespace PVX::DeepNeuralNets {
 	void RecurrentInput::BackPropagate() {
 		PreviousLayer->BackPropagate(gradient.block(RecurrentNeuronCount, 0, gradient.rows()- RecurrentNeuronCount, gradient.cols()));
 	}
-	void RecurrentInput::ZeroGradient(int cols) {
+	void RecurrentInput::ZeroGradient(int64_t cols) {
 		if ((PreviousLayer->nOutput() + RecurrentNeuronCount)!= gradient.rows() || gradient.cols()!=cols) {
 			gradient = netData::Zero(PreviousLayer->nOutput() + RecurrentNeuronCount, cols);
 		} else {
@@ -186,7 +186,7 @@ namespace PVX::DeepNeuralNets {
 		throw "Unimplementable?";
 		//PreviousLayer->BackPropagate(grad.block(RecurrentNeuronCount, 0, grad.rows()- RecurrentNeuronCount, grad.cols()));
 	}
-	void RecurrentInput::BackPropagate(const netData& grad, int Index) {
+	void RecurrentInput::BackPropagate(const netData& grad, int64_t Index) {
 		gradient.col(Index) += grad;
 	}
 	size_t RecurrentInput::nInput() const {
@@ -197,7 +197,7 @@ namespace PVX::DeepNeuralNets {
 	}
 
 
-	RecurrentUtility::RecurrentUtility(NeuralLayer_Base* inp, int OutSize, LayerActivation Activate, TrainScheme Train) :
+	RecurrentUtility::RecurrentUtility(NeuralLayer_Base* inp, int64_t OutSize, LayerActivation Activate, TrainScheme Train) :
 		Input(inp, OutSize),
 		State(&Input, OutSize, Activate, Train),
 		Layer(&State, &Input)

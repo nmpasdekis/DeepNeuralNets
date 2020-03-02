@@ -85,6 +85,7 @@ namespace PVX {
 
 			int GenId;
 			float GenPc;
-		};
+		}; 
+		std::vector<std::vector<float>> kMean(const std::vector<std::vector<float>>& vecs, size_t nClusters);
 	}
 }

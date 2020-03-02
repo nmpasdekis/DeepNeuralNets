@@ -21,9 +21,12 @@
     <ClCompile Include="..\..\src\PVX_GradientDescent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PVX_kMean.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\PVX_GenericSolvers.h">
+    <ClInclude Include="..\..\include\PVX_Solvers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

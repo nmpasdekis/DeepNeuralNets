@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\src\PVX_NeuralNets_NetContainer.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Output.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_Recurrent.cpp" />
+    <ClCompile Include="..\..\src\PVX_NeuralNets_TrainingCallbacks.cpp" />
     <ClCompile Include="..\..\src\PVX_NeuralNets_UtilityLayers.cpp" />
     <ClCompile Include="..\..\src\PVX_Training.cpp" />
   </ItemGroup>

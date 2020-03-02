@@ -25,7 +25,7 @@ namespace PVX::DeepNeuralNets {
 	netData NeuralLayer_Base::RealOutput() {
 		return outPart(output);
 	}
-	netData NeuralLayer_Base::RealOutput(int Index) {
+	netData NeuralLayer_Base::RealOutput(int64_t Index) {
 		return outPart(output, Index);
 	}
 	float NeuralLayer_Base::LearnRate() {
@@ -69,6 +69,13 @@ namespace PVX::DeepNeuralNets {
 		return output.cols();
 	}
 
+	void NeuralLayer_Base::UseDropout(int b) {
+		PVX::DeepNeuralNets::UseDropout = b;
+	}
+	void NeuralLayer_Base::OverrideParamsOnLoad(int b) {
+		OverrideOnLoad = b;
+	}
+
 	void NeuralLayer_Base::SetLearnRate(float Beta) {
 		if (PreviousLayer)PreviousLayer->SetLearnRate(Beta);
 		for (auto& p : InputLayers) p->SetLearnRate(Beta);
@@ -95,23 +102,18 @@ namespace PVX::DeepNeuralNets {
 	void NeuralLayer_Base::FixInputs(const std::vector<NeuralLayer_Base*>& ids) {
 		if (PreviousLayer) {
 			PreviousLayer = ids[(*(int*)&PreviousLayer)-1ll];
-			PreviousLayer->OutputRefCount++;
 		}
 		else for (auto& l : InputLayers) {
 			l = ids[(*(int*)&l)-1ll];
-			l->OutputRefCount++;
 		}
 	}
 
 	void NeuralLayer_Base::Input(NeuralLayer_Base* inp) {
 		PreviousLayer = inp;
-		inp->OutputRefCount++;
 	}
 
 	void NeuralLayer_Base::Inputs(const std::vector<NeuralLayer_Base*>& inp) {
 		InputLayers = inp;
-		for (auto i: InputLayers)
-			i->OutputRefCount++;
 	}
 
 	void NetDNA::GetData(std::vector<float>& Data) {

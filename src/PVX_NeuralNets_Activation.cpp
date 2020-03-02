@@ -94,7 +94,7 @@ namespace PVX {
 		}
 
 
-		void ActivationLayer::FeedForward(int Version) {
+		void ActivationLayer::FeedForward(int64_t Version) {
 			if (Version > FeedVersion) {
 				PreviousLayer->FeedForward(Version);
 				//const auto& inp = PreviousLayer->Output();
@@ -109,7 +109,7 @@ namespace PVX {
 				FeedIndexVersion = output.cols();
 			}
 		}
-		void ActivationLayer::FeedForward(int Index, int Version) {
+		void ActivationLayer::FeedForward(int64_t Index, int64_t Version) {
 			if (Version > FeedVersion) {
 				FeedVersion = Version;
 				FeedIndexVersion = -1;
@@ -133,7 +133,7 @@ namespace PVX {
 			PreviousLayer->BackPropagate(grad);
 		}
 
-		void ActivationLayer::BackPropagate(const netData& Gradient, int Index) {
+		void ActivationLayer::BackPropagate(const netData& Gradient, int64_t Index) {
 			netData grad = Gradient.array() * Derivative(outPart(output, Index)).array();
 			PreviousLayer->BackPropagate(grad, Index);
 		}
@@ -163,7 +163,7 @@ namespace PVX {
 			bin.Execute();
 			auto ret = new ActivationLayer(outc, LayerActivation(act));
 			if (Id>=0)ret->Id = Id;
-			*(int*)&ret->PreviousLayer = prev;
+			ret->PreviousLayer = (NeuralLayer_Base*)prev;
 			return ret;
 		}
 

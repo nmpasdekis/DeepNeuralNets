@@ -34,22 +34,19 @@ namespace PVX {
 
 		size_t InputLayer::DNA(std::map<void*, WeightData>& Weights) { return 0; }
 
-		int InputLayer::Input(const float * Data, int Count) {
+		void InputLayer::Input(const float * Data, int64_t Count) {
 			if (output.cols() != Count)
 				output = netData::Ones(output.rows(), Count);
 			outPart(output) = Map((float*)Data, output.rows() - 1ll, output.cols());
-			return 1;
 		}
 
-		int InputLayer::Input(const netData & Data) {
+		void InputLayer::Input(const netData & Data) {
 			if (output.rows() == Data.rows() + 1) {
 				if (output.cols() != Data.cols()) {
 					output = netData::Ones(output.rows(), Data.cols());
 				}
 				outPart(output) = Data;
-				return 1;
 			}
-			return 0;
 		}
 
 		void InputLayer::InputRaw(const netData & Data) {

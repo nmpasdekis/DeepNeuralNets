@@ -1,7 +1,8 @@
 #include<PVX_NeuralNetsCPU.h>
-#include<PVX_GenericSolvers.h>
+#include<PVX_Solvers.h>
 #include<iostream>
 #include <random>
+#include <stdio.h>
 
 using namespace PVX::DeepNeuralNets;
 using namespace PVX::Solvers;
@@ -11,7 +12,7 @@ netData OneHot2();
 
 
 int main() {
-	if(false)
+	if(true)
 	{
 		NeuralLayer_Base::LearnRate(0.01f);
 		NeuralLayer_Base::RMSprop(0.99f);
@@ -30,7 +31,7 @@ int main() {
 
 		NeuronLayer Dense4(&Recurrent, 128);
 
-		NetContainer Output(&Dense4);
+		NetContainer Output(&Dense4, OutputType::SoftMax);
 
 		Output.Save(L"RNN.pvx");
 	}
@@ -59,7 +60,8 @@ int main() {
 	while (err > 1e-8) {
 		Output.ResetRNN();
 		err = 0.9f * err + 0.1f *  Output.Train(Data, Res, 100);
-		std::cout << "\r" << (8.0f+log10(err)) << " " << err << "                ";
+		printf("\r%.7f %.7f %5d", 8.0f+log10(err), err, Iter);
+		//std::cout << "\r" << (8.0f+log10(err)) << " " << err << "                ";
 
 		//if (err < BestError) {
 		//	Output.SaveCheckpoint();
